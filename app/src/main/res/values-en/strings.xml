@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GymTracker</string>
+    <string name="tab_train">Train</string>
+    <string name="tab_progress">Progress</string>
+    <string name="tab_friends">Friends</string>
+    <string name="home_identity">Your identity</string>
+    <string name="home_identity_hint">This fingerprint identifies you to your friends. Nobody else knows it.</string>
+    <string name="home_total_points">Total points</string>
+    <string name="home_week_points">This week</string>
+    <string name="home_level">Level %1$d</string>
+    <string name="home_streak">Streak: %1$d weeks</string>
+    <string name="home_sessions">%1$d sessions logged</string>
+    <string name="coming_soon">Coming soon</string>
+</resources>
