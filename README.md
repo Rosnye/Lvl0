@@ -44,6 +44,19 @@ es testeable en JVM sin emulador.
 ./gradlew test                          # todas las pruebas unitarias
 ```
 
+```bash
+./gradlew :app:updateDebugScreenshotTest   # renderiza las @Preview en JVM, sin emulador
+```
+
+Las capturas de referencia quedan en `app/src/screenshotTestDebug/reference/` y
+`validateDebugScreenshotTest` las compara en CI para detectar regresiones visuales.
+
+## Cómo luce hoy
+
+| Claro | Oscuro | Sin datos |
+|---|---|---|
+| ![Inicio claro](docs/capturas/inicio-claro.png) | ![Inicio oscuro](docs/capturas/inicio-oscuro.png) | ![Inicio sin datos](docs/capturas/inicio-sin-datos.png) |
+
 ## Estado
 
 Fase 0 completada: estructura de módulos, esquema de eventos v1, fórmula de puntaje v1 con pruebas,

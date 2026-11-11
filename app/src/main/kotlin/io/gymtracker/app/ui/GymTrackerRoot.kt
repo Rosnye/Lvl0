@@ -2,6 +2,7 @@ package io.gymtracker.app.ui
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -34,38 +35,55 @@ enum class Destination(val route: String, @param:StringRes val label: Int, val i
     FRIENDS("friends", R.string.tab_friends, Icons.Filled.Person),
 }
 
+/** Raíz con navegación real. */
 @Composable
-fun GymTrackerRoot() {
+fun GymTrackerRoot(home: @Composable () -> Unit = { HomeScreen() }) {
     val navController = rememberNavController()
     val backStack by navController.currentBackStackEntryAsState()
     val current = backStack?.destination
+    val selected = Destination.entries.firstOrNull { dest -> current?.hierarchy?.any { it.route == dest.route } == true }
+        ?: Destination.TRAIN
 
+    AppScaffold(
+        selected = selected,
+        onSelect = { dest ->
+            navController.navigate(dest.route) {
+                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
+        },
+    ) { padding ->
+        NavHost(navController, startDestination = Destination.TRAIN.route, modifier = Modifier.padding(padding)) {
+            composable(Destination.TRAIN.route) { home() }
+            composable(Destination.PROGRESS.route) { Placeholder() }
+            composable(Destination.FRIENDS.route) { Placeholder() }
+        }
+    }
+}
+
+/** Andamiaje visual (barra inferior) sin dependencia de navegación: reutilizable en previews y capturas. */
+@Composable
+fun AppScaffold(
+    selected: Destination,
+    onSelect: (Destination) -> Unit,
+    content: @Composable (PaddingValues) -> Unit,
+) {
     Scaffold(
         bottomBar = {
             NavigationBar {
                 Destination.entries.forEach { dest ->
                     NavigationBarItem(
-                        selected = current?.hierarchy?.any { it.route == dest.route } == true,
-                        onClick = {
-                            navController.navigate(dest.route) {
-                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
+                        selected = dest == selected,
+                        onClick = { onSelect(dest) },
                         icon = { Icon(dest.icon, contentDescription = null) },
                         label = { Text(stringResource(dest.label)) },
                     )
                 }
             }
         },
-    ) { padding ->
-        NavHost(navController, startDestination = Destination.TRAIN.route, modifier = Modifier.padding(padding)) {
-            composable(Destination.TRAIN.route) { HomeScreen() }
-            composable(Destination.PROGRESS.route) { Placeholder() }
-            composable(Destination.FRIENDS.route) { Placeholder() }
-        }
-    }
+        content = content,
+    )
 }
 
 @Composable
