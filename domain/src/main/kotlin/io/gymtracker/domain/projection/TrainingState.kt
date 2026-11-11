@@ -2,6 +2,7 @@ package io.gymtracker.domain.projection
 
 import io.gymtracker.domain.event.EventPayload
 import io.gymtracker.domain.event.SignedEvent
+import io.gymtracker.domain.model.BuiltInExercises
 import io.gymtracker.domain.model.ExerciseDefinition
 import io.gymtracker.domain.model.ExerciseId
 import io.gymtracker.domain.model.Goal
@@ -13,7 +14,8 @@ import io.gymtracker.domain.model.WorkoutSession
 /** Estado actual del entrenamiento propio, derivado del registro de eventos. */
 data class TrainingState(
     val profile: Profile? = null,
-    val exercises: Map<ExerciseId, ExerciseDefinition> = emptyMap(),
+    /** Catálogo precargado + ejercicios personalizados definidos por eventos. */
+    val exercises: Map<ExerciseId, ExerciseDefinition> = BuiltInExercises.byId,
     val sessions: List<WorkoutSession> = emptyList(),
     /** Metas activas (las archivadas no aparecen). */
     val goals: List<Goal> = emptyList(),
@@ -21,9 +23,9 @@ data class TrainingState(
 
 /** Reconstruye el estado aplicando los eventos en orden de seq. */
 object Projector {
-    fun project(events: List<SignedEvent>): TrainingState {
+    fun project(events: List<SignedEvent>, builtIn: Map<ExerciseId, ExerciseDefinition> = BuiltInExercises.byId): TrainingState {
         var profile: Profile? = null
-        val exercises = LinkedHashMap<ExerciseId, ExerciseDefinition>()
+        val exercises = LinkedHashMap<ExerciseId, ExerciseDefinition>(builtIn)
         val sessions = LinkedHashMap<SessionId, WorkoutSession>()
         val deletedSessions = HashSet<SessionId>()
         val goals = LinkedHashMap<GoalId, Goal>()

@@ -152,7 +152,7 @@ class ScoringEngine {
         }
 
     /** Volumen en kg: suma de reps × peso de las series de trabajo con carga. */
-    internal fun volumeKg(session: WorkoutSession, exercises: Map<ExerciseId, ExerciseDefinition>): Double {
+    fun volumeKg(session: WorkoutSession, exercises: Map<ExerciseId, ExerciseDefinition>): Double {
         var grams = 0L
         for (entry in session.entries) for (set in entry.sets) {
             if (set.isWorkingSet && set.reps > 0 && countsLoad(entry.exerciseId, set.weightGrams, exercises)) {

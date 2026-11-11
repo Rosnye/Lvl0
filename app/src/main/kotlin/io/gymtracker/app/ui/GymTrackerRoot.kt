@@ -26,8 +26,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import io.gymtracker.app.R
+import io.gymtracker.app.ui.history.HistoryScreen
+import io.gymtracker.app.ui.history.SessionDetailScreen
 import io.gymtracker.app.ui.home.HomeScreen
+import io.gymtracker.app.ui.picker.ExercisePickerScreen
+import io.gymtracker.app.ui.workout.WorkoutScreen
+import io.gymtracker.domain.model.SessionId
 
 enum class Destination(val route: String, @param:StringRes val label: Int, val icon: ImageVector) {
     TRAIN("train", R.string.tab_train, Icons.Filled.Home),
@@ -35,9 +42,16 @@ enum class Destination(val route: String, @param:StringRes val label: Int, val i
     FRIENDS("friends", R.string.tab_friends, Icons.Filled.Person),
 }
 
+object Routes {
+    const val WORKOUT = "workout"
+    const val PICKER = "picker"
+    const val SESSION = "session/{id}"
+    fun session(id: SessionId) = "session/${id.value}"
+}
+
 /** Raíz con navegación real. */
 @Composable
-fun GymTrackerRoot(home: @Composable () -> Unit = { HomeScreen() }) {
+fun GymTrackerRoot() {
     val navController = rememberNavController()
     val backStack by navController.currentBackStackEntryAsState()
     val current = backStack?.destination
@@ -55,8 +69,23 @@ fun GymTrackerRoot(home: @Composable () -> Unit = { HomeScreen() }) {
         },
     ) { padding ->
         NavHost(navController, startDestination = Destination.TRAIN.route, modifier = Modifier.padding(padding)) {
-            composable(Destination.TRAIN.route) { home() }
-            composable(Destination.PROGRESS.route) { Placeholder() }
+            composable(Destination.TRAIN.route) {
+                HomeScreen(
+                    onOpenWorkout = { navController.navigate(Routes.WORKOUT) },
+                    onOpenSession = { navController.navigate(Routes.session(it)) },
+                )
+            }
+            composable(Routes.WORKOUT) {
+                WorkoutScreen(
+                    onAddExercise = { navController.navigate(Routes.PICKER) },
+                    onClosed = { navController.popBackStack(Destination.TRAIN.route, inclusive = false) },
+                )
+            }
+            composable(Routes.PICKER) { ExercisePickerScreen(onBack = { navController.popBackStack() }) }
+            composable(Destination.PROGRESS.route) { HistoryScreen(onOpenSession = { navController.navigate(Routes.session(it)) }) }
+            composable(Routes.SESSION, arguments = listOf(navArgument("id") { type = NavType.StringType })) { entry ->
+                SessionDetailScreen(id = SessionId(entry.arguments?.getString("id").orEmpty()), onBack = { navController.popBackStack() })
+            }
             composable(Destination.FRIENDS.route) { Placeholder() }
         }
     }

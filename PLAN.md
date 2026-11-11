@@ -233,8 +233,16 @@ Pendiente: nombre definitivo de la app y licencia (recomendación: código abier
 ## 7. Estado y siguientes pasos
 **Fase 0 completada (2026-11-10):** estructura de módulos, esquema de eventos v1, motor de puntaje v1 con 17 pruebas, identidad criptográfica con 6 pruebas, Room + SQLCipher con clave sellada en Keystore, app Compose que arranca y muestra huella y puntaje. `./gradlew :app:assembleDebug` genera el APK.
 
-Siguientes pasos (Fase 1):
-1. Catálogo de ejercicios precargado (evento `exercise_defined` al primer arranque) y ejercicios personalizados.
-2. Pantalla de registro de sesión: elegir ejercicio, añadir series, temporizador de descanso.
-3. Historial y calendario; desglose del puntaje por sesión en pantalla.
-4. CI con GitHub Actions: pruebas JVM y assembleDebug en cada push.
+**Fase 1 completada (2026-11-11):**
+- Catálogo precargado de 55 ejercicios en `domain` (ids estables `builtin:*`, no se registran como eventos) y ejercicios personalizados por `exercise_defined`.
+- Borrador de entrenamiento persistido en DataStore (`WorkoutDraft`), convertido a `session_logged` al terminar; publica `score_published` en el mismo paso.
+- Temporizador de descanso: servicio en primer plano (`specialUse`) con notificación que usa el cronómetro del sistema, acciones +30 s / Omitir y aviso con sonido y vibración al terminar. Estado persistido para sobrevivir a la muerte del proceso.
+- Historial agrupado por semana, detalle de sesión con desglose del puntaje y borrado por lápida.
+- Capturas de pantalla automatizadas para todas las pantallas (`updateDebugScreenshotTest`).
+
+Pendiente de la Fase 1 original: rutinas/plantillas y calendario de asistencia (pasan a Fase 2).
+
+Siguientes pasos (Fase 2):
+1. Metas en pantalla (frecuencia semanal y fuerza), rachas e insignias.
+2. Rutinas/plantillas y calendario de asistencia.
+3. CI con GitHub Actions: pruebas JVM, capturas y assembleDebug en cada push.

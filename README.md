@@ -53,12 +53,25 @@ Las capturas de referencia quedan en `app/src/screenshotTestDebug/reference/` y
 
 ## Cómo luce hoy
 
-| Claro | Oscuro | Sin datos |
+| Inicio | Entrenamiento con descanso | Selector de ejercicios |
 |---|---|---|
-| ![Inicio claro](docs/capturas/inicio-claro.png) | ![Inicio oscuro](docs/capturas/inicio-oscuro.png) | ![Inicio sin datos](docs/capturas/inicio-sin-datos.png) |
+| ![Inicio](docs/capturas/inicio-claro.png) | ![Entrenamiento](docs/capturas/entrenamiento-descanso.png) | ![Selector](docs/capturas/selector-ejercicios.png) |
+
+| Historial | Detalle de sesión | Modo oscuro |
+|---|---|---|
+| ![Historial](docs/capturas/historial.png) | ![Detalle](docs/capturas/detalle-sesion.png) | ![Oscuro](docs/capturas/entrenamiento-oscuro.png) |
+
+## Temporizador de descanso
+
+Al marcar una serie de trabajo arranca el descanso (60/90/120/180 s configurables). Vive en un
+servicio en primer plano (`app/.../timer/RestTimerService.kt`) para seguir corriendo con la app en
+segundo plano o la pantalla apagada. La notificación muestra la cuenta regresiva con el cronómetro
+del sistema y ofrece **+30 s** y **Omitir**; al llegar a cero avisa con sonido y vibración.
+El estado se persiste, así que sobrevive a la muerte del proceso.
 
 ## Estado
 
-Fase 0 completada: estructura de módulos, esquema de eventos v1, fórmula de puntaje v1 con pruebas,
-identidad criptográfica, base de datos cifrada y una pantalla inicial que muestra la huella de
-identidad y el puntaje. Siguiente: Fase 1 (registro de entrenamientos).
+- Fase 0 completada: módulos, esquema de eventos v1, fórmula de puntaje v1, identidad criptográfica, base de datos cifrada.
+- Fase 1 completada: catálogo de 55 ejercicios + personalizados, registro de sesión con borrador persistente,
+  temporizador de descanso en primer plano con notificación, historial semanal y detalle con desglose de puntos.
+- Siguiente: Fase 2 (metas en pantalla, rachas e insignias) y Fase 3 (amigos y sincronización P2P).

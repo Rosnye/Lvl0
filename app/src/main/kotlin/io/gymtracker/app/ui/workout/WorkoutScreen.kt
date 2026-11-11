@@ -1,0 +1,313 @@
+package io.gymtracker.app.ui.workout
+
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.FilledIconToggleButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.gymtracker.app.R
+import io.gymtracker.app.ui.common.Format
+import io.gymtracker.domain.model.DraftEntry
+import io.gymtracker.domain.model.DraftSet
+import io.gymtracker.domain.model.ExerciseDefinition
+import io.gymtracker.domain.model.LoadType
+
+@Composable
+fun WorkoutScreen(
+    onAddExercise: () -> Unit,
+    onClosed: () -> Unit,
+    viewModel: WorkoutViewModel = hiltViewModel(),
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    NotificationPermissionRequest()
+    WorkoutContent(
+        state = state,
+        onAddExercise = onAddExercise,
+        onUpdateSet = viewModel::updateSet,
+        onToggleDone = viewModel::toggleDone,
+        onAddSet = viewModel::addSet,
+        onRemoveSet = viewModel::removeSet,
+        onRemoveEntry = viewModel::removeEntry,
+        onTimerAdd = viewModel::timerAdd,
+        onTimerSkip = viewModel::timerSkip,
+        onRestSeconds = viewModel::setRestSeconds,
+        onFinish = { viewModel.finish { saved -> if (saved) onClosed() } },
+        onDiscard = { viewModel.discard(onClosed) },
+    )
+}
+
+@Composable
+private fun NotificationPermissionRequest() {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    LaunchedEffect(Unit) {
+        val granted = ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+        if (!granted) launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
+}
+
+@Composable
+fun WorkoutContent(
+    state: WorkoutUiState,
+    onAddExercise: () -> Unit = {},
+    onUpdateSet: (Int, Int, (DraftSet) -> DraftSet) -> Unit = { _, _, _ -> },
+    onToggleDone: (Int, Int) -> Unit = { _, _ -> },
+    onAddSet: (Int) -> Unit = {},
+    onRemoveSet: (Int, Int) -> Unit = { _, _ -> },
+    onRemoveEntry: (Int) -> Unit = {},
+    onTimerAdd: () -> Unit = {},
+    onTimerSkip: () -> Unit = {},
+    onRestSeconds: (Int) -> Unit = {},
+    onFinish: () -> Unit = {},
+    onDiscard: () -> Unit = {},
+) {
+    var confirmFinish by remember { mutableStateOf(false) }
+    var confirmDiscard by remember { mutableStateOf(false) }
+    val draft = state.draft
+
+    Column(Modifier.fillMaxSize()) {
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column {
+                Text(stringResource(R.string.workout_title), style = MaterialTheme.typography.titleLarge)
+                Text(stringResource(R.string.workout_elapsed, Format.mmss(state.elapsedSeconds)), style = MaterialTheme.typography.bodySmall)
+            }
+            Row {
+                TextButton(onClick = { confirmDiscard = true }) { Text(stringResource(R.string.workout_discard)) }
+                Button(onClick = { confirmFinish = true }, enabled = (draft?.doneSetCount ?: 0) > 0) {
+                    Text(stringResource(R.string.workout_finish))
+                }
+            }
+        }
+
+        RestTimerBar(state, onTimerAdd, onTimerSkip, onRestSeconds)
+
+        LazyColumn(
+            Modifier.weight(1f).fillMaxWidth(),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            if (draft == null || draft.entries.isEmpty()) {
+                item { Text(stringResource(R.string.workout_empty), style = MaterialTheme.typography.bodyMedium) }
+            }
+            draft?.entries?.let { entries ->
+                itemsIndexed(entries, key = { i, e -> "${e.exerciseId.value}-$i" }) { entryIndex, entry ->
+                    ExerciseCard(
+                        entry = entry,
+                        exercise = state.exercises[entry.exerciseId],
+                        onUpdateSet = { setIndex, transform -> onUpdateSet(entryIndex, setIndex, transform) },
+                        onToggleDone = { setIndex -> onToggleDone(entryIndex, setIndex) },
+                        onAddSet = { onAddSet(entryIndex) },
+                        onRemoveSet = { setIndex -> onRemoveSet(entryIndex, setIndex) },
+                        onRemove = { onRemoveEntry(entryIndex) },
+                    )
+                }
+            }
+            item {
+                OutlinedButton(onClick = onAddExercise, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.Filled.Add, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.workout_add_exercise))
+                }
+            }
+        }
+    }
+
+    if (confirmFinish) {
+        AlertDialog(
+            onDismissRequest = { confirmFinish = false },
+            text = { Text(stringResource(R.string.workout_finish_confirm)) },
+            confirmButton = { TextButton(onClick = { confirmFinish = false; onFinish() }) { Text(stringResource(R.string.workout_finish)) } },
+            dismissButton = { TextButton(onClick = { confirmFinish = false }) { Text(stringResource(R.string.cancel)) } },
+        )
+    }
+    if (confirmDiscard) {
+        AlertDialog(
+            onDismissRequest = { confirmDiscard = false },
+            text = { Text(stringResource(R.string.workout_discard_confirm)) },
+            confirmButton = { TextButton(onClick = { confirmDiscard = false; onDiscard() }) { Text(stringResource(R.string.workout_discard)) } },
+            dismissButton = { TextButton(onClick = { confirmDiscard = false }) { Text(stringResource(R.string.cancel)) } },
+        )
+    }
+}
+
+@Composable
+private fun RestTimerBar(state: WorkoutUiState, onAdd: () -> Unit, onSkip: () -> Unit, onRestSeconds: (Int) -> Unit) {
+    val timer = state.timer
+    Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (timer != null) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Column {
+                        Text(stringResource(R.string.timer_title), style = MaterialTheme.typography.labelMedium)
+                        Text(Format.mmss(timer.remainingSeconds.toLong()), style = MaterialTheme.typography.displaySmall)
+                    }
+                    Row {
+                        OutlinedButton(onClick = onAdd) { Text(stringResource(R.string.timer_add_30)) }
+                        Spacer(Modifier.width(8.dp))
+                        Button(onClick = onSkip) { Text(stringResource(R.string.timer_skip)) }
+                    }
+                }
+                LinearProgressIndicator(progress = { timer.progress }, modifier = Modifier.fillMaxWidth())
+            } else {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(stringResource(R.string.workout_rest_default, state.restSeconds), style = MaterialTheme.typography.labelLarge)
+                    listOf(60, 90, 120, 180).forEach { s ->
+                        FilterChip(selected = state.restSeconds == s, onClick = { onRestSeconds(s) }, label = { Text("${s}s") })
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExerciseCard(
+    entry: DraftEntry,
+    exercise: ExerciseDefinition?,
+    onUpdateSet: (Int, (DraftSet) -> DraftSet) -> Unit,
+    onToggleDone: (Int) -> Unit,
+    onAddSet: () -> Unit,
+    onRemoveSet: (Int) -> Unit,
+    onRemove: () -> Unit,
+) {
+    val loadType = exercise?.loadType ?: LoadType.WEIGHTED
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(exercise?.name ?: entry.exerciseId.value, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                IconButton(onClick = onRemove) { Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.workout_remove_exercise)) }
+            }
+            entry.sets.forEachIndexed { index, set ->
+                SetRow(
+                    index = index,
+                    set = set,
+                    loadType = loadType,
+                    onUpdate = { transform -> onUpdateSet(index, transform) },
+                    onToggleDone = { onToggleDone(index) },
+                    onRemove = { onRemoveSet(index) },
+                )
+            }
+            TextButton(onClick = onAddSet) {
+                Icon(Icons.Filled.Add, contentDescription = null)
+                Spacer(Modifier.width(4.dp))
+                Text(stringResource(R.string.workout_add_set))
+            }
+        }
+    }
+}
+
+@Composable
+private fun SetRow(
+    index: Int,
+    set: DraftSet,
+    loadType: LoadType,
+    onUpdate: ((DraftSet) -> DraftSet) -> Unit,
+    onToggleDone: () -> Unit,
+    onRemove: () -> Unit,
+) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text("${index + 1}", style = MaterialTheme.typography.labelLarge, modifier = Modifier.width(20.dp))
+        AssistChip(
+            onClick = { onUpdate { it.copy(isWarmup = !it.isWarmup) } },
+            label = { Text(stringResource(R.string.workout_warmup)) },
+            colors = if (set.isWarmup) androidx.compose.material3.AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer) else androidx.compose.material3.AssistChipDefaults.assistChipColors(),
+        )
+        when (loadType) {
+            LoadType.WEIGHTED, LoadType.BODYWEIGHT -> {
+                NumberField(
+                    value = if (set.weightGrams == 0) "" else Format.kg(set.weightGrams),
+                    label = stringResource(R.string.workout_kg),
+                    decimal = true,
+                    modifier = Modifier.weight(1f),
+                ) { text -> Format.parseKg(text)?.let { g -> onUpdate { it.copy(weightGrams = g) } } ?: if (text.isBlank()) onUpdate { it.copy(weightGrams = 0) } else Unit }
+                NumberField(
+                    value = if (set.reps == 0) "" else set.reps.toString(),
+                    label = stringResource(R.string.workout_reps),
+                    modifier = Modifier.weight(1f),
+                ) { text -> onUpdate { it.copy(reps = text.toIntOrNull() ?: 0) } }
+            }
+            LoadType.TIMED -> NumberField(
+                value = if (set.durationSeconds == 0) "" else set.durationSeconds.toString(),
+                label = stringResource(R.string.workout_seconds),
+                modifier = Modifier.weight(2f),
+            ) { text -> onUpdate { it.copy(durationSeconds = text.toIntOrNull() ?: 0) } }
+            LoadType.DISTANCE -> NumberField(
+                value = if (set.distanceMeters == 0) "" else set.distanceMeters.toString(),
+                label = stringResource(R.string.workout_meters),
+                modifier = Modifier.weight(2f),
+            ) { text -> onUpdate { it.copy(distanceMeters = text.toIntOrNull() ?: 0) } }
+        }
+        FilledIconToggleButton(checked = set.done, onCheckedChange = { onToggleDone() }) {
+            Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.workout_done_desc))
+        }
+        IconButton(onClick = onRemove) { Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.workout_remove_set)) }
+    }
+}
+
+@Composable
+private fun NumberField(value: String, label: String, modifier: Modifier = Modifier, decimal: Boolean = false, onChange: (String) -> Unit) {
+    var text by remember(value) { mutableStateOf(value) }
+    OutlinedTextField(
+        value = text,
+        onValueChange = { new ->
+            val filtered = new.filter { it.isDigit() || (decimal && (it == '.' || it == ',')) }.take(7)
+            text = filtered
+            onChange(filtered)
+        },
+        label = { Text(label) },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(keyboardType = if (decimal) KeyboardType.Decimal else KeyboardType.Number),
+        modifier = modifier,
+    )
+}

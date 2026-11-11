@@ -11,6 +11,7 @@ import io.gymtracker.data.db.AppDatabase
 import io.gymtracker.data.db.EventDao
 import io.gymtracker.data.db.FriendDao
 import io.gymtracker.data.db.RoomEventLog
+import io.gymtracker.data.draft.WorkoutDraftStore
 import io.gymtracker.data.security.KeystoreSealer
 import io.gymtracker.data.security.SecretStore
 import io.gymtracker.domain.event.EventLog
@@ -47,4 +48,8 @@ object DataModule {
     @Provides
     @Singleton
     fun eventLog(dao: EventDao): EventLog = RoomEventLog(dao)
+
+    @Provides
+    @Singleton
+    fun workoutDraftStore(@ApplicationContext context: Context): WorkoutDraftStore = WorkoutDraftStore(context)
 }

@@ -1,0 +1,149 @@
+package io.gymtracker.app.ui.history
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.gymtracker.app.R
+import io.gymtracker.app.ui.common.Format
+import io.gymtracker.domain.model.ExerciseDefinition
+import io.gymtracker.domain.model.ExerciseId
+import io.gymtracker.domain.model.LoadType
+import io.gymtracker.domain.model.SessionId
+import io.gymtracker.domain.model.WorkoutSet
+import io.gymtracker.domain.scoring.ScoreFormulaV1
+import kotlin.math.roundToInt
+
+@Composable
+fun SessionDetailScreen(id: SessionId, onBack: () -> Unit, viewModel: HistoryViewModel = hiltViewModel()) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val item = state.weeks.asSequence().flatMap { it.items }.firstOrNull { it.session.id == id }
+    SessionDetailContent(item, state.exercises, onBack = onBack, onDelete = { viewModel.delete(id, onBack) })
+}
+
+@Composable
+fun SessionDetailContent(
+    item: SessionItem?,
+    exercises: Map<ExerciseId, ExerciseDefinition>,
+    onBack: () -> Unit = {},
+    onDelete: () -> Unit = {},
+) {
+    var confirmDelete by remember { mutableStateOf(false) }
+    Column(Modifier.fillMaxSize()) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back)) }
+            Text(
+                item?.let { Format.day(it.session.date) } ?: stringResource(R.string.session_title),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f),
+            )
+            if (item != null) {
+                IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.delete)) }
+            }
+        }
+        if (item == null) {
+            Text(stringResource(R.string.session_not_found), modifier = Modifier.padding(16.dp))
+            return
+        }
+        LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                Text(stringResource(R.string.session_duration, Format.duration(item.session.durationSeconds)))
+                Text(stringResource(R.string.history_volume, Format.kg((item.volumeKg * 1000).toInt())))
+            }
+            item { ScoreCard(item) }
+            item.session.entries.forEach { entry ->
+                item {
+                    val exercise = exercises[entry.exerciseId]
+                    Card(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(exercise?.name ?: entry.exerciseId.value, style = MaterialTheme.typography.titleMedium)
+                            entry.sets.forEachIndexed { i, set ->
+                                Text("${i + 1}. " + setLabel(set, exercise?.loadType ?: LoadType.WEIGHTED), style = MaterialTheme.typography.bodyMedium)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (confirmDelete) {
+        AlertDialog(
+            onDismissRequest = { confirmDelete = false },
+            text = { Text(stringResource(R.string.session_delete_confirm)) },
+            confirmButton = { TextButton(onClick = { confirmDelete = false; onDelete() }) { Text(stringResource(R.string.delete)) } },
+            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.cancel)) } },
+        )
+    }
+}
+
+@Composable
+private fun setLabel(set: WorkoutSet, loadType: LoadType): String {
+    val base = when (loadType) {
+        LoadType.WEIGHTED, LoadType.BODYWEIGHT ->
+            if (set.weightGrams > 0) stringResource(R.string.session_set_weighted, set.reps, Format.kg(set.weightGrams))
+            else stringResource(R.string.session_set_reps, set.reps)
+        LoadType.TIMED -> stringResource(R.string.session_set_timed, Format.mmss(set.durationSeconds.toLong()))
+        LoadType.DISTANCE -> stringResource(R.string.session_set_distance, set.distanceMeters)
+    }
+    return if (set.isWarmup) "$base ${stringResource(R.string.session_set_warmup)}" else base
+}
+
+@Composable
+private fun ScoreCard(item: SessionItem) {
+    val score = item.score
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(stringResource(R.string.session_score_title), style = MaterialTheme.typography.titleMedium)
+            if (score == null) {
+                Text(stringResource(R.string.session_score_not_valid), style = MaterialTheme.typography.bodySmall)
+                return@Column
+            }
+            ScoreLine(stringResource(R.string.session_score_base), score.basePoints)
+            ScoreLine(stringResource(R.string.session_score_volume), score.volumeBonus)
+            ScoreLine(stringResource(R.string.session_score_pr, score.prCount), score.prBonus)
+            val multiplied = ((score.basePoints + score.volumeBonus + score.prBonus) * score.multiplier).roundToInt()
+            ScoreLine(stringResource(R.string.session_score_streak, score.streakWeeks), multiplied - (score.basePoints + score.volumeBonus + score.prBonus))
+            ScoreLine(stringResource(R.string.session_score_goals), score.goalBonus)
+            HorizontalDivider()
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(stringResource(R.string.session_score_total), style = MaterialTheme.typography.titleSmall)
+                Text("${score.points}", style = MaterialTheme.typography.titleSmall)
+            }
+            Text("v${ScoreFormulaV1.VERSION}", style = MaterialTheme.typography.labelSmall)
+        }
+    }
+}
+
+@Composable
+private fun ScoreLine(label: String, value: Int) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(label, style = MaterialTheme.typography.bodyMedium)
+        Text(if (value >= 0) "+$value" else "$value", style = MaterialTheme.typography.bodyMedium)
+    }
+}

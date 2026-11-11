@@ -4,6 +4,13 @@
     <string name="tab_train">Entrenar</string>
     <string name="tab_progress">Progreso</string>
     <string name="tab_friends">Amigos</string>
+    <string name="coming_soon">Próximamente</string>
+    <string name="back">Volver</string>
+    <string name="cancel">Cancelar</string>
+    <string name="delete">Eliminar</string>
+    <string name="save">Guardar</string>
+
+    <!-- Inicio -->
     <string name="home_identity">Tu identidad</string>
     <string name="home_identity_hint">Esta huella te identifica ante tus amigos. Nadie más la conoce.</string>
     <string name="home_total_points">Puntos totales</string>
@@ -11,5 +18,117 @@
     <string name="home_level">Nivel %1$d</string>
     <string name="home_streak">Racha: %1$d semanas</string>
     <string name="home_sessions">%1$d sesiones registradas</string>
-    <string name="coming_soon">Próximamente</string>
+    <string name="home_start_workout">Empezar entrenamiento</string>
+    <string name="home_resume_workout">Continuar entrenamiento</string>
+    <string name="home_resume_detail">%1$d series hechas · empezó a las %2$s</string>
+    <string name="home_recent">Últimas sesiones</string>
+    <string name="home_no_sessions">Aún no has registrado ninguna sesión. Empieza una y marca tus series.</string>
+
+    <!-- Entrenamiento en curso -->
+    <string name="workout_title">Entrenamiento</string>
+    <string name="workout_elapsed">Tiempo: %1$s</string>
+    <string name="workout_add_exercise">Añadir ejercicio</string>
+    <string name="workout_add_set">Añadir serie</string>
+    <string name="workout_finish">Terminar</string>
+    <string name="workout_discard">Descartar</string>
+    <string name="workout_discard_confirm">¿Descartar este entrenamiento? Se perderán las series marcadas.</string>
+    <string name="workout_finish_empty">Marca al menos una serie como hecha para terminar.</string>
+    <string name="workout_finish_confirm">¿Terminar y guardar? Las series sin marcar se descartan.</string>
+    <string name="workout_empty">Añade tu primer ejercicio para empezar.</string>
+    <string name="workout_remove_exercise">Quitar ejercicio</string>
+    <string name="workout_set_number">Serie</string>
+    <string name="workout_kg">kg</string>
+    <string name="workout_reps">reps</string>
+    <string name="workout_seconds">seg</string>
+    <string name="workout_meters">m</string>
+    <string name="workout_warmup">C</string>
+    <string name="workout_warmup_desc">Calentamiento</string>
+    <string name="workout_done_desc">Serie hecha</string>
+    <string name="workout_remove_set">Quitar serie</string>
+    <string name="workout_rest_default">Descanso: %1$d s</string>
+
+    <!-- Temporizador -->
+    <string name="timer_title">Descanso</string>
+    <string name="timer_remaining">%1$s restantes</string>
+    <string name="timer_add_30">+30 s</string>
+    <string name="timer_skip">Omitir</string>
+    <string name="timer_notification_title">Descanso en curso</string>
+    <string name="timer_notification_text">Descanso de %1$d s · toca para volver al entrenamiento</string>
+    <string name="timer_done_title">¡Descanso terminado!</string>
+    <string name="timer_done_text">Vamos con la siguiente serie.</string>
+    <string name="timer_permission_hint">Activa las notificaciones para ver la cuenta regresiva en la barra y recibir el aviso al terminar.</string>
+    <string name="channel_timer_running">Descanso en curso</string>
+    <string name="channel_timer_running_desc">Cuenta regresiva del descanso entre series.</string>
+    <string name="channel_timer_done">Fin del descanso</string>
+    <string name="channel_timer_done_desc">Aviso con sonido y vibración al terminar el descanso.</string>
+
+    <!-- Selector de ejercicios -->
+    <string name="picker_title">Elegir ejercicio</string>
+    <string name="picker_search">Buscar</string>
+    <string name="picker_all">Todos</string>
+    <string name="picker_create">Crear ejercicio</string>
+    <string name="picker_no_results">Sin resultados. Puedes crear el ejercicio.</string>
+    <string name="picker_name">Nombre</string>
+    <string name="picker_muscle">Grupo muscular</string>
+    <string name="picker_equipment">Equipo</string>
+    <string name="picker_load">Cómo se mide</string>
+    <string name="picker_custom">Personalizado</string>
+
+    <!-- Historial -->
+    <string name="history_title">Historial</string>
+    <string name="history_empty">Aquí aparecerán tus sesiones.</string>
+    <string name="history_points">%1$d pts</string>
+    <string name="history_summary">%1$d ejercicios · %2$d series · %3$s</string>
+    <string name="history_volume">%1$s kg de volumen</string>
+    <string name="history_week">Semana del %1$s</string>
+    <string name="history_week_total">%1$d sesiones · %2$d pts</string>
+
+    <!-- Detalle de sesión -->
+    <string name="session_title">Sesión</string>
+    <string name="session_not_found">Sesión no encontrada</string>
+    <string name="session_duration">Duración: %1$s</string>
+    <string name="session_delete_confirm">¿Eliminar esta sesión? Se restará su puntaje.</string>
+    <string name="session_score_title">Desglose del puntaje</string>
+    <string name="session_score_base">Base</string>
+    <string name="session_score_volume">Bono de volumen</string>
+    <string name="session_score_pr">Récords (%1$d)</string>
+    <string name="session_score_streak">Multiplicador de racha (%1$d semanas)</string>
+    <string name="session_score_goals">Bonos de metas</string>
+    <string name="session_score_total">Total</string>
+    <string name="session_score_not_valid">Esta sesión no puntúa: necesita al menos 3 series de trabajo.</string>
+    <string name="session_set_weighted">%1$d × %2$s kg</string>
+    <string name="session_set_reps">%1$d reps</string>
+    <string name="session_set_timed">%1$s</string>
+    <string name="session_set_distance">%1$d m</string>
+    <string name="session_set_warmup">(calentamiento)</string>
+
+    <!-- Grupos musculares -->
+    <string name="muscle_chest">Pecho</string>
+    <string name="muscle_back">Espalda</string>
+    <string name="muscle_shoulders">Hombros</string>
+    <string name="muscle_biceps">Bíceps</string>
+    <string name="muscle_triceps">Tríceps</string>
+    <string name="muscle_quads">Cuádriceps</string>
+    <string name="muscle_hamstrings">Isquiotibiales</string>
+    <string name="muscle_glutes">Glúteos</string>
+    <string name="muscle_calves">Pantorrillas</string>
+    <string name="muscle_core">Core</string>
+    <string name="muscle_full_body">Cuerpo completo</string>
+    <string name="muscle_cardio">Cardio</string>
+
+    <!-- Equipo -->
+    <string name="equipment_barbell">Barra</string>
+    <string name="equipment_dumbbell">Mancuernas</string>
+    <string name="equipment_machine">Máquina</string>
+    <string name="equipment_cable">Polea</string>
+    <string name="equipment_bodyweight">Peso corporal</string>
+    <string name="equipment_kettlebell">Kettlebell</string>
+    <string name="equipment_band">Banda</string>
+    <string name="equipment_other">Otro</string>
+
+    <!-- Tipo de carga -->
+    <string name="load_weighted">Peso y repeticiones</string>
+    <string name="load_bodyweight">Peso corporal (lastre opcional)</string>
+    <string name="load_timed">Tiempo</string>
+    <string name="load_distance">Distancia</string>
 </resources>

@@ -92,3 +92,33 @@ class EventTest {
         assertEquals(300, feed.latest?.totalPoints)
     }
 }
+
+class DraftTest {
+    @Test
+    fun `el borrador solo conserva series hechas y descarta ejercicios vacios`() {
+        val draft = io.gymtracker.domain.model.WorkoutDraft(
+            id = io.gymtracker.domain.model.SessionId("d1"),
+            startedAtEpochMs = 1_762_800_000_000, // 2025-11-10 aprox. UTC
+            entries = listOf(
+                io.gymtracker.domain.model.DraftEntry(SQUAT, listOf(
+                    io.gymtracker.domain.model.DraftSet(reps = 5, weightGrams = 100_000, done = true),
+                    io.gymtracker.domain.model.DraftSet(reps = 5, weightGrams = 100_000, done = false),
+                )),
+                io.gymtracker.domain.model.DraftEntry(BENCH, listOf(io.gymtracker.domain.model.DraftSet(reps = 8))),
+            ),
+        )
+        val session = draft.toSession(finishedAtEpochMs = 1_762_800_000_000 + 3_600_000, zone = java.time.ZoneOffset.UTC)
+        assertEquals(1, session.entries.size)
+        assertEquals(1, session.entries[0].sets.size)
+        assertEquals(3600, session.durationSeconds)
+        assertEquals("2025-11-10", session.localDate)
+    }
+
+    @Test
+    fun `el catalogo precargado tiene ids unicos y esta en el estado proyectado`() {
+        val all = io.gymtracker.domain.model.BuiltInExercises.all
+        assertEquals(all.size, all.map { it.id }.toSet().size)
+        val state = Projector.project(emptyList())
+        assertTrue(state.exercises.size >= 50)
+    }
+}

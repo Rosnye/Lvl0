@@ -4,6 +4,12 @@
     <string name="tab_train">Train</string>
     <string name="tab_progress">Progress</string>
     <string name="tab_friends">Friends</string>
+    <string name="coming_soon">Coming soon</string>
+    <string name="back">Back</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="save">Save</string>
+
     <string name="home_identity">Your identity</string>
     <string name="home_identity_hint">This fingerprint identifies you to your friends. Nobody else knows it.</string>
     <string name="home_total_points">Total points</string>
@@ -11,5 +17,109 @@
     <string name="home_level">Level %1$d</string>
     <string name="home_streak">Streak: %1$d weeks</string>
     <string name="home_sessions">%1$d sessions logged</string>
-    <string name="coming_soon">Coming soon</string>
+    <string name="home_start_workout">Start workout</string>
+    <string name="home_resume_workout">Resume workout</string>
+    <string name="home_resume_detail">%1$d sets done · started at %2$s</string>
+    <string name="home_recent">Recent sessions</string>
+    <string name="home_no_sessions">No sessions yet. Start one and check off your sets.</string>
+
+    <string name="workout_title">Workout</string>
+    <string name="workout_elapsed">Time: %1$s</string>
+    <string name="workout_add_exercise">Add exercise</string>
+    <string name="workout_add_set">Add set</string>
+    <string name="workout_finish">Finish</string>
+    <string name="workout_discard">Discard</string>
+    <string name="workout_discard_confirm">Discard this workout? Checked sets will be lost.</string>
+    <string name="workout_finish_empty">Check at least one set as done to finish.</string>
+    <string name="workout_finish_confirm">Finish and save? Unchecked sets are discarded.</string>
+    <string name="workout_empty">Add your first exercise to get started.</string>
+    <string name="workout_remove_exercise">Remove exercise</string>
+    <string name="workout_set_number">Set</string>
+    <string name="workout_kg">kg</string>
+    <string name="workout_reps">reps</string>
+    <string name="workout_seconds">sec</string>
+    <string name="workout_meters">m</string>
+    <string name="workout_warmup">W</string>
+    <string name="workout_warmup_desc">Warm-up</string>
+    <string name="workout_done_desc">Set done</string>
+    <string name="workout_remove_set">Remove set</string>
+    <string name="workout_rest_default">Rest: %1$d s</string>
+
+    <string name="timer_title">Rest</string>
+    <string name="timer_remaining">%1$s left</string>
+    <string name="timer_add_30">+30 s</string>
+    <string name="timer_skip">Skip</string>
+    <string name="timer_notification_title">Resting</string>
+    <string name="timer_notification_text">%1$d s rest · tap to return to your workout</string>
+    <string name="timer_done_title">Rest is over!</string>
+    <string name="timer_done_text">On to the next set.</string>
+    <string name="timer_permission_hint">Enable notifications to see the countdown in the status bar and get the alert when rest ends.</string>
+    <string name="channel_timer_running">Rest in progress</string>
+    <string name="channel_timer_running_desc">Countdown between sets.</string>
+    <string name="channel_timer_done">Rest finished</string>
+    <string name="channel_timer_done_desc">Sound and vibration when rest ends.</string>
+
+    <string name="picker_title">Choose exercise</string>
+    <string name="picker_search">Search</string>
+    <string name="picker_all">All</string>
+    <string name="picker_create">Create exercise</string>
+    <string name="picker_no_results">No results. You can create the exercise.</string>
+    <string name="picker_name">Name</string>
+    <string name="picker_muscle">Muscle group</string>
+    <string name="picker_equipment">Equipment</string>
+    <string name="picker_load">How it is measured</string>
+    <string name="picker_custom">Custom</string>
+
+    <string name="history_title">History</string>
+    <string name="history_empty">Your sessions will show up here.</string>
+    <string name="history_points">%1$d pts</string>
+    <string name="history_summary">%1$d exercises · %2$d sets · %3$s</string>
+    <string name="history_volume">%1$s kg volume</string>
+    <string name="history_week">Week of %1$s</string>
+    <string name="history_week_total">%1$d sessions · %2$d pts</string>
+
+    <string name="session_title">Session</string>
+    <string name="session_not_found">Session not found</string>
+    <string name="session_duration">Duration: %1$s</string>
+    <string name="session_delete_confirm">Delete this session? Its points will be removed.</string>
+    <string name="session_score_title">Score breakdown</string>
+    <string name="session_score_base">Base</string>
+    <string name="session_score_volume">Volume bonus</string>
+    <string name="session_score_pr">Personal records (%1$d)</string>
+    <string name="session_score_streak">Streak multiplier (%1$d weeks)</string>
+    <string name="session_score_goals">Goal bonuses</string>
+    <string name="session_score_total">Total</string>
+    <string name="session_score_not_valid">This session does not score: it needs at least 3 working sets.</string>
+    <string name="session_set_weighted">%1$d × %2$s kg</string>
+    <string name="session_set_reps">%1$d reps</string>
+    <string name="session_set_timed">%1$s</string>
+    <string name="session_set_distance">%1$d m</string>
+    <string name="session_set_warmup">(warm-up)</string>
+
+    <string name="muscle_chest">Chest</string>
+    <string name="muscle_back">Back</string>
+    <string name="muscle_shoulders">Shoulders</string>
+    <string name="muscle_biceps">Biceps</string>
+    <string name="muscle_triceps">Triceps</string>
+    <string name="muscle_quads">Quads</string>
+    <string name="muscle_hamstrings">Hamstrings</string>
+    <string name="muscle_glutes">Glutes</string>
+    <string name="muscle_calves">Calves</string>
+    <string name="muscle_core">Core</string>
+    <string name="muscle_full_body">Full body</string>
+    <string name="muscle_cardio">Cardio</string>
+
+    <string name="equipment_barbell">Barbell</string>
+    <string name="equipment_dumbbell">Dumbbells</string>
+    <string name="equipment_machine">Machine</string>
+    <string name="equipment_cable">Cable</string>
+    <string name="equipment_bodyweight">Bodyweight</string>
+    <string name="equipment_kettlebell">Kettlebell</string>
+    <string name="equipment_band">Band</string>
+    <string name="equipment_other">Other</string>
+
+    <string name="load_weighted">Weight and reps</string>
+    <string name="load_bodyweight">Bodyweight (optional added load)</string>
+    <string name="load_timed">Time</string>
+    <string name="load_distance">Distance</string>
 </resources>

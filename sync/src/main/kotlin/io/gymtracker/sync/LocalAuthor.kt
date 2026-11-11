@@ -34,14 +34,19 @@ class LocalAuthor @Inject constructor(
 
     suspend fun record(payload: EventPayload): SignedEvent = mutex.withLock { appendLocked(payload) }
 
-    /** Registra una sesión y publica el resumen semanal actualizado en un solo paso. */
-    suspend fun recordSessionAndPublish(payload: EventPayload.SessionLogged, today: LocalDate = LocalDate.now()): SignedEvent =
+    /**
+     * Registra un evento que afecta al puntaje (sesión registrada o borrada) y publica
+     * el resumen semanal actualizado para los amigos en el mismo paso.
+     */
+    suspend fun recordAndPublish(payload: EventPayload, today: LocalDate = LocalDate.now()): SignedEvent =
         mutex.withLock {
             val event = appendLocked(payload)
             val report = scoringEngine.compute(Projector.project(eventLog.readAll(authorId)), today)
             appendLocked(EventPayload.ScorePublished(report.summaryFor(today)))
             event
         }
+
+    suspend fun currentState(): TrainingState = Projector.project(eventLog.readAll(authorId))
 
     fun observeState(): Flow<TrainingState> = eventLog.observe(authorId).map(Projector::project)
 
