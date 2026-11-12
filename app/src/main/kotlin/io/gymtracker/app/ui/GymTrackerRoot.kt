@@ -20,20 +20,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import io.gymtracker.app.R
+import io.gymtracker.app.ui.goal.NewStrengthGoalScreen
 import io.gymtracker.app.ui.history.HistoryScreen
 import io.gymtracker.app.ui.history.SessionDetailScreen
 import io.gymtracker.app.ui.home.HomeScreen
 import io.gymtracker.app.ui.picker.ExercisePickerScreen
+import io.gymtracker.app.ui.picker.ExercisePickerViewModel
+import io.gymtracker.app.ui.progress.ProgressScreen
+import io.gymtracker.app.ui.routine.RoutineEditorScreen
+import io.gymtracker.app.ui.routine.RoutineEditorViewModel
 import io.gymtracker.app.ui.workout.WorkoutScreen
+import io.gymtracker.app.ui.workout.WorkoutViewModel
+import io.gymtracker.domain.model.ExerciseId
 import io.gymtracker.domain.model.SessionId
 
 enum class Destination(val route: String, @param:StringRes val label: Int, val icon: ImageVector) {
@@ -44,22 +54,36 @@ enum class Destination(val route: String, @param:StringRes val label: Int, val i
 
 object Routes {
     const val WORKOUT = "workout"
-    const val PICKER = "picker"
+    const val PICKER = "picker?${ExercisePickerViewModel.ARG_GOAL_MODE}={${ExercisePickerViewModel.ARG_GOAL_MODE}}"
     const val SESSION = "session/{id}"
+    const val HISTORY = "history"
+    const val ROUTINE = "routine/{${RoutineEditorViewModel.ARG_ID}}"
+    const val NEW_GOAL = "goal/strength"
+
+    fun picker(goalMode: Boolean = false) = "picker?${ExercisePickerViewModel.ARG_GOAL_MODE}=$goalMode"
     fun session(id: SessionId) = "session/${id.value}"
+    fun routine(id: String?) = "routine/${id ?: RoutineEditorViewModel.NEW}"
+
+    /** Pestaña que se marca en la barra inferior para cada pantalla. */
+    fun tabOf(route: String?): Destination = when {
+        route == null -> Destination.TRAIN
+        route.startsWith(Destination.PROGRESS.route) || route == HISTORY || route.startsWith("session") || route == NEW_GOAL -> Destination.PROGRESS
+        route.startsWith(Destination.FRIENDS.route) -> Destination.FRIENDS
+        else -> Destination.TRAIN
+    }
 }
+
+/** Clave con la que el selector devuelve el ejercicio elegido a la pantalla anterior. */
+private const val PICKED_EXERCISE = "picked_exercise"
 
 /** Raíz con navegación real. */
 @Composable
 fun GymTrackerRoot() {
     val navController = rememberNavController()
     val backStack by navController.currentBackStackEntryAsState()
-    val current = backStack?.destination
-    val selected = Destination.entries.firstOrNull { dest -> current?.hierarchy?.any { it.route == dest.route } == true }
-        ?: Destination.TRAIN
 
     AppScaffold(
-        selected = selected,
+        selected = Routes.tabOf(backStack?.destination?.route),
         onSelect = { dest ->
             navController.navigate(dest.route) {
                 popUpTo(navController.graph.findStartDestination().id) { saveState = true }
@@ -73,22 +97,77 @@ fun GymTrackerRoot() {
                 HomeScreen(
                     onOpenWorkout = { navController.navigate(Routes.WORKOUT) },
                     onOpenSession = { navController.navigate(Routes.session(it)) },
+                    onEditRoutine = { navController.navigate(Routes.routine(it?.value)) },
                 )
             }
-            composable(Routes.WORKOUT) {
+            composable(Routes.WORKOUT) { entry ->
+                val viewModel: WorkoutViewModel = hiltViewModel()
+                val picked = entry.pickedExercise()
+                androidx.compose.runtime.LaunchedEffect(picked) {
+                    if (picked != null) {
+                        viewModel.addExercise(picked)
+                        entry.clearPicked()
+                    }
+                }
                 WorkoutScreen(
-                    onAddExercise = { navController.navigate(Routes.PICKER) },
+                    onAddExercise = { navController.navigate(Routes.picker()) },
                     onClosed = { navController.popBackStack(Destination.TRAIN.route, inclusive = false) },
+                    viewModel = viewModel,
                 )
             }
-            composable(Routes.PICKER) { ExercisePickerScreen(onBack = { navController.popBackStack() }) }
-            composable(Destination.PROGRESS.route) { HistoryScreen(onOpenSession = { navController.navigate(Routes.session(it)) }) }
+            composable(
+                Routes.PICKER,
+                arguments = listOf(navArgument(ExercisePickerViewModel.ARG_GOAL_MODE) { type = NavType.BoolType; defaultValue = false }),
+            ) {
+                ExercisePickerScreen(
+                    onPicked = { id -> navController.returnPicked(id) },
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(Routes.ROUTINE, arguments = listOf(navArgument(RoutineEditorViewModel.ARG_ID) { type = NavType.StringType })) { entry ->
+                RoutineEditorScreen(
+                    pickedExercise = entry.pickedExercise(),
+                    onPickedConsumed = { entry.clearPicked() },
+                    onAddExercise = { navController.navigate(Routes.picker()) },
+                    onClose = { navController.popBackStack() },
+                )
+            }
+            composable(Destination.PROGRESS.route) {
+                ProgressScreen(
+                    onOpenHistory = { navController.navigate(Routes.HISTORY) },
+                    onNewStrengthGoal = { navController.navigate(Routes.NEW_GOAL) },
+                )
+            }
+            composable(Routes.NEW_GOAL) { entry ->
+                NewStrengthGoalScreen(
+                    pickedExercise = entry.pickedExercise(),
+                    onPickedConsumed = { entry.clearPicked() },
+                    onChooseExercise = { navController.navigate(Routes.picker(goalMode = true)) },
+                    onClose = { navController.popBackStack() },
+                )
+            }
+            composable(Routes.HISTORY) { HistoryScreen(onOpenSession = { navController.navigate(Routes.session(it)) }) }
             composable(Routes.SESSION, arguments = listOf(navArgument("id") { type = NavType.StringType })) { entry ->
                 SessionDetailScreen(id = SessionId(entry.arguments?.getString("id").orEmpty()), onBack = { navController.popBackStack() })
             }
             composable(Destination.FRIENDS.route) { Placeholder() }
         }
     }
+}
+
+@Composable
+private fun NavBackStackEntry.pickedExercise(): ExerciseId? {
+    val value by savedStateHandle.getStateFlow<String?>(PICKED_EXERCISE, null).collectAsStateWithLifecycle()
+    return value?.let(::ExerciseId)
+}
+
+private fun NavBackStackEntry.clearPicked() {
+    savedStateHandle[PICKED_EXERCISE] = null
+}
+
+private fun NavHostController.returnPicked(id: ExerciseId) {
+    previousBackStackEntry?.savedStateHandle?.set(PICKED_EXERCISE, id.value)
+    popBackStack()
 }
 
 /** Andamiaje visual (barra inferior) sin dependencia de navegación: reutilizable en previews y capturas. */

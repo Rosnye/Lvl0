@@ -49,6 +49,8 @@ Código: `domain/src/main/kotlin/io/gymtracker/domain/event/`.
 | `session_deleted` | PRIVATE | `sessionId` | Lápida: elimina la sesión e ignora registros posteriores con ese `id`. |
 | `goal_created` | PRIVATE | `goal: Goal` | Alta o reemplazo por `id`, salvo que esté archivada. |
 | `goal_archived` | PRIVATE | `goalId` | Elimina la meta de las activas. |
+| `routine_saved` | PRIVATE | `routine: Routine` | Alta o reemplazo por `id`, salvo que exista lápida. |
+| `routine_deleted` | PRIVATE | `routineId` | Lápida: elimina la rutina e ignora guardados posteriores con ese `id`. |
 | `score_published` | FRIENDS | `summary: ScoreSummary` | No afecta al estado propio. En el feed de un amigo, el último por `weekStart` manda. |
 
 ### Modelos de carga útil
@@ -59,6 +61,10 @@ Código: `domain/src/main/kotlin/io/gymtracker/domain/event/`.
 - `sets[]`: `{ reps, weightGrams, durationSeconds, distanceMeters, rpe?, isWarmup }`. Pesos en gramos enteros para que la serialización sea exacta.
 
 **ExerciseDefinition**: `id, name, primaryMuscle, equipment, loadType`. `loadType` decide qué cuenta como volumen y récord: `WEIGHTED`, `BODYWEIGHT` (solo el lastre), `TIMED`, `DISTANCE`.
+
+**Routine** (añadido en la Fase 2, misma `schemaVersion` porque es privado y nunca llega a un amigo): `id, name, exercises[]`, cada uno `{ exerciseId, sets[] }` con series de plantilla (`DraftSet` sin marcar).
+
+**Catálogo precargado**: los ejercicios con id `builtin:*` viven en el código (`BuiltInExercises`) y nunca se registran como eventos. Solo los personalizados (`custom:*`) generan `exercise_defined`.
 
 **Goal**: `id, spec, createdLocalDate, deadlineLocalDate?`. `spec` es `weekly_frequency { sessionsPerWeek }` o `strength { exerciseId, targetWeightGrams, minReps }`.
 

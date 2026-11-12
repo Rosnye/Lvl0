@@ -53,13 +53,15 @@ Las capturas de referencia quedan en `app/src/screenshotTestDebug/reference/` y
 
 ## Cómo luce hoy
 
-| Inicio | Entrenamiento con descanso | Selector de ejercicios |
+| Inicio con rutinas | Entrenamiento con descanso | Progreso |
 |---|---|---|
-| ![Inicio](docs/capturas/inicio-claro.png) | ![Entrenamiento](docs/capturas/entrenamiento-descanso.png) | ![Selector](docs/capturas/selector-ejercicios.png) |
+| ![Inicio](docs/capturas/inicio-rutinas.png) | ![Entrenamiento](docs/capturas/entrenamiento-descanso.png) | ![Progreso](docs/capturas/progreso.png) |
 
-| Historial | Detalle de sesión | Modo oscuro |
+| Editor de rutina | Nueva meta | Detalle de sesión |
 |---|---|---|
-| ![Historial](docs/capturas/historial.png) | ![Detalle](docs/capturas/detalle-sesion.png) | ![Oscuro](docs/capturas/entrenamiento-oscuro.png) |
+| ![Rutina](docs/capturas/editor-rutina.png) | ![Meta](docs/capturas/nueva-meta.png) | ![Detalle](docs/capturas/detalle-sesion.png) |
+
+Más capturas en [docs/capturas](docs/capturas), incluida la pantalla de Progreso completa.
 
 ## Temporizador de descanso
 
@@ -74,4 +76,15 @@ El estado se persiste, así que sobrevive a la muerte del proceso.
 - Fase 0 completada: módulos, esquema de eventos v1, fórmula de puntaje v1, identidad criptográfica, base de datos cifrada.
 - Fase 1 completada: catálogo de 55 ejercicios + personalizados, registro de sesión con borrador persistente,
   temporizador de descanso en primer plano con notificación, historial semanal y detalle con desglose de puntos.
-- Siguiente: Fase 2 (metas en pantalla, rachas e insignias) y Fase 3 (amigos y sincronización P2P).
+- Fase 2 completada: Progreso con nivel, calendario de asistencia, metas (semanal, fuerza y repeticiones),
+  15 insignias, rutinas y CI con GitHub Actions.
+- Siguiente: Fase 3 (amigos y sincronización P2P).
+
+## CI y APK descargable
+
+Cada push a `main` ejecuta [`.github/workflows/android.yml`](.github/workflows/android.yml): pruebas de dominio
+y criptografía, validación de capturas y compilación del APK de depuración. El APK queda como artefacto
+de la ejecución en la pestaña Actions durante 30 días.
+
+Los APK de depuración se firman con `app/debug.keystore` (clave de depuración estándar, no secreta), así
+cualquiera de ellos se instala encima del anterior sin perder datos.

@@ -78,13 +78,16 @@ class ScoringEngine {
             val target = weeklyTargetFor(date, state.goals)
             val countInWeek = (sessionsSoFarInWeek[week] ?: 0) + 1
             sessionsSoFarInWeek[week] = countInWeek
-            if (countInWeek == target && weeklyBonusAwarded.add(week)) goalBonus += F.WEEKLY_GOAL_BONUS
+            val weeklyReached = countInWeek == target && weeklyBonusAwarded.add(week)
+            if (weeklyReached) goalBonus += F.WEEKLY_GOAL_BONUS
+            var strengthReached = 0
             for (goal in state.goals) {
                 val spec = goal.spec as? GoalSpec.Strength ?: continue
                 if (goal.id in strengthGoalsAwarded || date < goal.createdDate) continue
                 if (achieves(session, spec)) {
                     strengthGoalsAwarded += goal.id
                     goalBonus += F.STRENGTH_GOAL_BONUS
+                    strengthReached++
                 }
             }
 
@@ -100,6 +103,8 @@ class ScoringEngine {
                 streakWeeks = streak,
                 multiplier = multiplier,
                 goalBonus = goalBonus,
+                weeklyGoalReached = weeklyReached,
+                strengthGoalsReached = strengthReached,
                 points = points,
             )
         }
@@ -135,11 +140,15 @@ class ScoringEngine {
         return streak
     }
 
-    /** Meta de frecuencia vigente en [date]: la última creada hasta esa fecha, o la de defecto. */
-    internal fun weeklyTargetFor(date: LocalDate, goals: List<Goal>): Int {
+    /**
+     * Meta de frecuencia vigente en [date]: la última creada hasta esa fecha, o la de defecto.
+     * [goals] llega en orden de creación; entre metas del mismo día manda la última.
+     */
+    fun weeklyTargetFor(date: LocalDate, goals: List<Goal>): Int {
         val goal = goals
             .filter { it.spec is GoalSpec.WeeklyFrequency && it.createdDate <= date }
-            .maxByOrNull { it.createdDate }
+            .sortedBy { it.createdDate }
+            .lastOrNull()
             ?.spec as? GoalSpec.WeeklyFrequency
         return (goal?.sessionsPerWeek ?: F.DEFAULT_WEEKLY_TARGET).coerceIn(F.MIN_WEEKLY_TARGET, F.MAX_WEEKLY_TARGET)
     }
@@ -174,7 +183,7 @@ class ScoringEngine {
         return result
     }
 
-    private fun achieves(session: WorkoutSession, spec: GoalSpec.Strength): Boolean =
+    fun achieves(session: WorkoutSession, spec: GoalSpec.Strength): Boolean =
         session.entries.any { entry ->
             entry.exerciseId == spec.exerciseId && entry.sets.any {
                 it.isWorkingSet && it.weightGrams >= spec.targetWeightGrams && it.reps >= spec.minReps
@@ -185,5 +194,8 @@ class ScoringEngine {
         fun epleyGrams(weightGrams: Int, reps: Int): Int = (weightGrams * (1.0 + reps / 30.0)).roundToInt()
 
         fun levelFor(totalPoints: Int): Int = floor(sqrt(totalPoints.toDouble() / F.LEVEL_DIVISOR)).toInt() + 1
+
+        /** Puntos acumulados necesarios para alcanzar [level] (inverso de [levelFor]). */
+        fun pointsForLevel(level: Int): Int = F.LEVEL_DIVISOR * (level - 1) * (level - 1)
     }
 }

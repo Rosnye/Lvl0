@@ -4,6 +4,8 @@ import io.gymtracker.domain.model.ExerciseDefinition
 import io.gymtracker.domain.model.Goal
 import io.gymtracker.domain.model.GoalId
 import io.gymtracker.domain.model.Profile
+import io.gymtracker.domain.model.Routine
+import io.gymtracker.domain.model.RoutineId
 import io.gymtracker.domain.model.ScoreSummary
 import io.gymtracker.domain.model.SessionId
 import io.gymtracker.domain.model.WorkoutSession
@@ -71,6 +73,20 @@ sealed interface EventPayload {
     @SerialName("goal_archived")
     data class GoalArchived(val goalId: GoalId) : EventPayload {
         override val kind get() = "goal_archived"
+        override val requiredVisibility get() = Visibility.PRIVATE
+    }
+
+    @Serializable
+    @SerialName("routine_saved")
+    data class RoutineSaved(val routine: Routine) : EventPayload {
+        override val kind get() = "routine_saved"
+        override val requiredVisibility get() = Visibility.PRIVATE
+    }
+
+    @Serializable
+    @SerialName("routine_deleted")
+    data class RoutineDeleted(val routineId: RoutineId) : EventPayload {
+        override val kind get() = "routine_deleted"
         override val requiredVisibility get() = Visibility.PRIVATE
     }
 

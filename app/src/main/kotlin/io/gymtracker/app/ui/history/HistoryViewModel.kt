@@ -54,5 +54,12 @@ class HistoryViewModel @Inject constructor(
         }
     }
 
+    fun saveAsRoutine(name: String, session: WorkoutSession, onDone: () -> Unit) {
+        viewModelScope.launch {
+            repository.saveRoutineFromSession(name, session)
+            onDone()
+        }
+    }
+
     fun item(id: SessionId): SessionItem? = state.value.weeks.asSequence().flatMap { it.items }.firstOrNull { it.session.id == id }
 }

@@ -62,9 +62,31 @@ Tras cada sesión registrada se anexa un `score_published` con el `ScoreSummary`
 
 - Los datos son autodeclarados; la fórmula dificulta inflar puntos sin mentir, pero no detecta mentiras. Es un juego entre amigos.
 - Al compartir solo el puntaje, los amigos **confían** en el resumen firmado del autor en lugar de recalcularlo. Si en el futuro se comparte el resumen de sesiones, podrán recalcularlo localmente con la misma fórmula.
-- Archivar una meta de frecuencia recalcula el historial con la meta de defecto. Simplificación consciente.
 - Ejercicios por tiempo o distancia solo aportan la base. Un volumen para cardio queda para una fórmula v2.
 - Si no hay baseline (primeras 3 sesiones, o vuelta tras más de 28 días), el bono de volumen es 0.
+
+## Política de metas (Fase 2)
+
+Para que ninguna acción del usuario cambie puntos ya ganados:
+
+- **Meta de frecuencia:** cambiarla crea una meta nueva con la fecha de hoy. Las anteriores no se archivan; cada semana se evalúa con la meta vigente en su fecha. Entre metas creadas el mismo día manda la última.
+- **Meta de fuerza:** solo se puede eliminar mientras no esté cumplida (no ha dado puntos). Una vez cumplida queda como trofeo en "Metas cumplidas".
+- **Meta de repeticiones:** es una meta de fuerza con peso objetivo 0 (p. ej. 12 dominadas). Se cumple con una serie de trabajo de al menos esas repeticiones.
+
+## Insignias (Fase 2)
+
+Se derivan del mismo `ScoreReport`, por lo que son deterministas y tienen fecha de desbloqueo. Son privadas: no se envían a los amigos.
+
+| Insignia | Condición |
+|---|---|
+| Primer paso / Constante / Habitual / Centenario | 1 / 10 / 50 / 100 sesiones válidas |
+| Nuevo récord / Rompe récords | 1 / 10 récords que puntúan |
+| Semana cumplida | Alcanzar la meta semanal una vez |
+| Un mes sin fallar / Trimestre de hierro | Racha de 4 / 12 semanas |
+| Objetivo logrado | Cumplir una meta de fuerza |
+| 10 toneladas / 100 toneladas | Volumen acumulado de 10 000 / 100 000 kg |
+| Nivel 5 / Nivel 10 | Alcanzar ese nivel |
+| Maratón | Una sesión válida de 90 minutos o más |
 
 ## Cómo cambiar la fórmula
 

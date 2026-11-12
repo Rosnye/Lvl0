@@ -48,16 +48,17 @@ import io.gymtracker.domain.model.ExerciseId
 import io.gymtracker.domain.model.LoadType
 import io.gymtracker.domain.model.MuscleGroup
 
+/** Selector de ejercicios. Devuelve el elegido con [onPicked]; quien lo abrió decide qué hacer. */
 @Composable
-fun ExercisePickerScreen(onBack: () -> Unit, viewModel: ExercisePickerViewModel = hiltViewModel()) {
+fun ExercisePickerScreen(onPicked: (ExerciseId) -> Unit, onBack: () -> Unit, viewModel: ExercisePickerViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     PickerContent(
         state = state,
         onBack = onBack,
         onQuery = viewModel::setQuery,
         onMuscle = viewModel::setMuscle,
-        onPick = { viewModel.pick(it, onBack) },
-        onCreate = { name, muscle, equipment, load -> viewModel.create(name, muscle, equipment, load, onBack) },
+        onPick = onPicked,
+        onCreate = { name, muscle, equipment, load -> viewModel.create(name, muscle, equipment, load, onPicked) },
     )
 }
 

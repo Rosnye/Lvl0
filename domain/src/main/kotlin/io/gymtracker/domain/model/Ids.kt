@@ -24,3 +24,4 @@ value class AuthorId(val hex: String) {
 @JvmInline @Serializable value class ExerciseId(val value: String)
 @JvmInline @Serializable value class SessionId(val value: String)
 @JvmInline @Serializable value class GoalId(val value: String)
+@JvmInline @Serializable value class RoutineId(val value: String)

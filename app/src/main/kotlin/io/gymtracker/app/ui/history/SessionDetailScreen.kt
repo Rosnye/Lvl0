@@ -17,6 +17,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -44,7 +46,14 @@ import kotlin.math.roundToInt
 fun SessionDetailScreen(id: SessionId, onBack: () -> Unit, viewModel: HistoryViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val item = state.weeks.asSequence().flatMap { it.items }.firstOrNull { it.session.id == id }
-    SessionDetailContent(item, state.exercises, onBack = onBack, onDelete = { viewModel.delete(id, onBack) })
+    var savedMessage by remember { mutableStateOf(false) }
+    SessionDetailContent(
+        item, state.exercises,
+        onBack = onBack,
+        onDelete = { viewModel.delete(id, onBack) },
+        onSaveRoutine = { name -> item?.let { viewModel.saveAsRoutine(name, it.session) { savedMessage = true } } },
+        routineSaved = savedMessage,
+    )
 }
 
 @Composable
@@ -53,8 +62,12 @@ fun SessionDetailContent(
     exercises: Map<ExerciseId, ExerciseDefinition>,
     onBack: () -> Unit = {},
     onDelete: () -> Unit = {},
+    onSaveRoutine: (String) -> Unit = {},
+    routineSaved: Boolean = false,
 ) {
     var confirmDelete by remember { mutableStateOf(false) }
+    var askRoutineName by remember { mutableStateOf<String?>(null) }
+    val defaultRoutineName = item?.let { it.session.routineName ?: stringResource(R.string.routine_default_name, Format.day(it.session.date)) }.orEmpty()
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back)) }
@@ -75,6 +88,13 @@ fun SessionDetailContent(
             item {
                 Text(stringResource(R.string.session_duration, Format.duration(item.session.durationSeconds)))
                 Text(stringResource(R.string.history_volume, Format.kg((item.volumeKg * 1000).toInt())))
+                OutlinedButton(
+                    onClick = { askRoutineName = defaultRoutineName },
+                    enabled = !routineSaved,
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                ) {
+                    Text(stringResource(if (routineSaved) R.string.routine_saved else R.string.routine_save_from_session))
+                }
             }
             item { ScoreCard(item) }
             item.session.entries.forEach { entry ->
@@ -91,6 +111,24 @@ fun SessionDetailContent(
                 }
             }
         }
+    }
+    askRoutineName?.let { current ->
+        AlertDialog(
+            onDismissRequest = { askRoutineName = null },
+            title = { Text(stringResource(R.string.routine_save_from_session)) },
+            text = {
+                OutlinedTextField(
+                    value = current,
+                    onValueChange = { askRoutineName = it.take(60) },
+                    label = { Text(stringResource(R.string.routine_name)) },
+                    singleLine = true,
+                )
+            },
+            confirmButton = {
+                TextButton(enabled = current.isNotBlank(), onClick = { askRoutineName = null; onSaveRoutine(current) }) { Text(stringResource(R.string.save)) }
+            },
+            dismissButton = { TextButton(onClick = { askRoutineName = null }) { Text(stringResource(R.string.cancel)) } },
+        )
     }
     if (confirmDelete) {
         AlertDialog(

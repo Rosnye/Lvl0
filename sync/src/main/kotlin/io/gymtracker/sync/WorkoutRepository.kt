@@ -7,19 +7,25 @@ import io.gymtracker.domain.model.DraftSet
 import io.gymtracker.domain.model.Equipment
 import io.gymtracker.domain.model.ExerciseDefinition
 import io.gymtracker.domain.model.ExerciseId
+import io.gymtracker.domain.model.Goal
+import io.gymtracker.domain.model.GoalId
+import io.gymtracker.domain.model.GoalSpec
 import io.gymtracker.domain.model.LoadType
 import io.gymtracker.domain.model.MuscleGroup
+import io.gymtracker.domain.model.Routine
+import io.gymtracker.domain.model.RoutineId
 import io.gymtracker.domain.model.SessionId
 import io.gymtracker.domain.model.WorkoutDraft
 import io.gymtracker.domain.model.WorkoutSession
 import io.gymtracker.domain.projection.TrainingState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import java.time.LocalDate
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Casos de uso del entrenamiento propio: borrador en curso, sesiones, ejercicios personalizados. */
+/** Casos de uso del entrenamiento propio: borrador en curso, sesiones, ejercicios, rutinas y metas. */
 @Singleton
 class WorkoutRepository @Inject constructor(
     private val localAuthor: LocalAuthor,
@@ -29,9 +35,13 @@ class WorkoutRepository @Inject constructor(
 
     fun observeState(): Flow<TrainingState> = localAuthor.observeState()
 
-    suspend fun startWorkout(now: Long = System.currentTimeMillis()): WorkoutDraft {
+    suspend fun currentState(): TrainingState = localAuthor.currentState()
+
+    /** Empieza un entrenamiento vacío o desde una rutina. Si ya hay uno en curso, lo devuelve sin tocarlo. */
+    suspend fun startWorkout(routine: Routine? = null, now: Long = System.currentTimeMillis()): WorkoutDraft {
         draftStore.draft.first()?.let { return it }
-        val draft = WorkoutDraft(id = SessionId(UUID.randomUUID().toString()), startedAtEpochMs = now)
+        val id = SessionId(UUID.randomUUID().toString())
+        val draft = routine?.toDraft(id, now) ?: WorkoutDraft(id = id, startedAtEpochMs = now)
         draftStore.save(draft)
         return draft
     }
@@ -66,6 +76,48 @@ class WorkoutRepository @Inject constructor(
         val exercise = ExerciseDefinition(ExerciseId("custom:${UUID.randomUUID()}"), name.trim(), muscle, equipment, loadType)
         localAuthor.record(EventPayload.ExerciseDefined(exercise))
         return exercise
+    }
+
+    // --- Rutinas ---
+
+    suspend fun saveRoutine(routine: Routine) {
+        localAuthor.record(EventPayload.RoutineSaved(routine.copy(name = routine.name.trim())))
+    }
+
+    suspend fun saveRoutineFromSession(name: String, session: WorkoutSession): Routine {
+        val routine = Routine.fromSession(newRoutineId(), name.trim(), session)
+        localAuthor.record(EventPayload.RoutineSaved(routine))
+        return routine
+    }
+
+    suspend fun deleteRoutine(id: RoutineId) {
+        localAuthor.record(EventPayload.RoutineDeleted(id))
+    }
+
+    fun newRoutineId(): RoutineId = RoutineId(UUID.randomUUID().toString())
+
+    // --- Metas ---
+
+    /**
+     * Cambia la meta de frecuencia semanal creando una meta nueva. Las anteriores no se archivan:
+     * el motor usa la vigente en cada fecha, así el puntaje de semanas pasadas no cambia.
+     */
+    suspend fun setWeeklyFrequency(sessionsPerWeek: Int, today: LocalDate = LocalDate.now()) {
+        createGoal(GoalSpec.WeeklyFrequency(sessionsPerWeek), today)
+    }
+
+    suspend fun createStrengthGoal(exerciseId: ExerciseId, targetWeightGrams: Int, minReps: Int, today: LocalDate = LocalDate.now()) {
+        createGoal(GoalSpec.Strength(exerciseId, targetWeightGrams, minReps), today)
+    }
+
+    /** Solo para metas de fuerza aún no cumplidas: archivarlas no cambia ningún puntaje ya ganado. */
+    suspend fun archiveGoal(id: GoalId) {
+        localAuthor.recordAndPublish(EventPayload.GoalArchived(id))
+    }
+
+    private suspend fun createGoal(spec: GoalSpec, today: LocalDate) {
+        val goal = Goal(GoalId(UUID.randomUUID().toString()), spec, createdLocalDate = today.toString())
+        localAuthor.recordAndPublish(EventPayload.GoalCreated(goal), today)
     }
 
     /** Últimas series hechas de un ejercicio, para prellenar la siguiente vez. */

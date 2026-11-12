@@ -18,6 +18,10 @@ data class SessionScore(
     val streakWeeks: Int,
     val multiplier: Double,
     val goalBonus: Int,
+    /** Esta sesión completó la meta de frecuencia de su semana. */
+    val weeklyGoalReached: Boolean = false,
+    /** Metas de fuerza cumplidas por primera vez en esta sesión. */
+    val strengthGoalsReached: Int = 0,
     val points: Int,
 )
 

@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
@@ -33,7 +32,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -46,13 +44,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.gymtracker.app.R
 import io.gymtracker.app.ui.common.Format
+import io.gymtracker.app.ui.common.SetValueFields
 import io.gymtracker.domain.model.DraftEntry
 import io.gymtracker.domain.model.DraftSet
 import io.gymtracker.domain.model.ExerciseDefinition
@@ -263,51 +261,10 @@ private fun SetRow(
             label = { Text(stringResource(R.string.workout_warmup)) },
             colors = if (set.isWarmup) androidx.compose.material3.AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer) else androidx.compose.material3.AssistChipDefaults.assistChipColors(),
         )
-        when (loadType) {
-            LoadType.WEIGHTED, LoadType.BODYWEIGHT -> {
-                NumberField(
-                    value = if (set.weightGrams == 0) "" else Format.kg(set.weightGrams),
-                    label = stringResource(R.string.workout_kg),
-                    decimal = true,
-                    modifier = Modifier.weight(1f),
-                ) { text -> Format.parseKg(text)?.let { g -> onUpdate { it.copy(weightGrams = g) } } ?: if (text.isBlank()) onUpdate { it.copy(weightGrams = 0) } else Unit }
-                NumberField(
-                    value = if (set.reps == 0) "" else set.reps.toString(),
-                    label = stringResource(R.string.workout_reps),
-                    modifier = Modifier.weight(1f),
-                ) { text -> onUpdate { it.copy(reps = text.toIntOrNull() ?: 0) } }
-            }
-            LoadType.TIMED -> NumberField(
-                value = if (set.durationSeconds == 0) "" else set.durationSeconds.toString(),
-                label = stringResource(R.string.workout_seconds),
-                modifier = Modifier.weight(2f),
-            ) { text -> onUpdate { it.copy(durationSeconds = text.toIntOrNull() ?: 0) } }
-            LoadType.DISTANCE -> NumberField(
-                value = if (set.distanceMeters == 0) "" else set.distanceMeters.toString(),
-                label = stringResource(R.string.workout_meters),
-                modifier = Modifier.weight(2f),
-            ) { text -> onUpdate { it.copy(distanceMeters = text.toIntOrNull() ?: 0) } }
-        }
+        SetValueFields(set, loadType, onUpdate)
         FilledIconToggleButton(checked = set.done, onCheckedChange = { onToggleDone() }) {
             Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.workout_done_desc))
         }
         IconButton(onClick = onRemove) { Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.workout_remove_set)) }
     }
-}
-
-@Composable
-private fun NumberField(value: String, label: String, modifier: Modifier = Modifier, decimal: Boolean = false, onChange: (String) -> Unit) {
-    var text by remember(value) { mutableStateOf(value) }
-    OutlinedTextField(
-        value = text,
-        onValueChange = { new ->
-            val filtered = new.filter { it.isDigit() || (decimal && (it == '.' || it == ',')) }.take(7)
-            text = filtered
-            onChange(filtered)
-        },
-        label = { Text(label) },
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = if (decimal) KeyboardType.Decimal else KeyboardType.Number),
-        modifier = modifier,
-    )
 }

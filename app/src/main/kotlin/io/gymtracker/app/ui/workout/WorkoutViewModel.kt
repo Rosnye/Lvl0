@@ -4,6 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.gymtracker.app.timer.RestTimer
+import io.gymtracker.app.ui.common.FinishSummary
+import io.gymtracker.app.ui.common.FinishSummaryBus
+import io.gymtracker.domain.achievements.AchievementEngine
+import io.gymtracker.domain.scoring.ScoringEngine
 import io.gymtracker.domain.model.DraftSet
 import io.gymtracker.domain.model.ExerciseDefinition
 import io.gymtracker.domain.model.ExerciseId
@@ -16,6 +20,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
 data class TimerUi(val remainingSeconds: Int, val totalSeconds: Int) {
@@ -34,6 +39,8 @@ data class WorkoutUiState(
 class WorkoutViewModel @Inject constructor(
     private val repository: WorkoutRepository,
     private val timer: RestTimer,
+    private val scoringEngine: ScoringEngine,
+    private val summaryBus: FinishSummaryBus,
 ) : ViewModel() {
 
     private val ticker = flow { while (true) { emit(System.currentTimeMillis()); delay(500) } }
@@ -74,10 +81,24 @@ class WorkoutViewModel @Inject constructor(
 
     fun removeEntry(entryIndex: Int) = edit { d -> d.copy(entries = d.entries.toMutableList().also { it.removeAt(entryIndex) }) }
 
+    /** Añade un ejercicio elegido en el selector, prellenado con las series de la última vez. */
+    fun addExercise(id: ExerciseId) {
+        viewModelScope.launch { repository.addExercise(id, repository.lastSetsOf(id)) }
+    }
+
+    /** Guarda la sesión y deja en el bus el resumen (puntos e insignias nuevas) para Inicio. */
     fun finish(onFinished: (saved: Boolean) -> Unit) {
         viewModelScope.launch {
+            val today = LocalDate.now()
+            val before = repository.currentState().let { AchievementEngine.unlockedIds(it, scoringEngine.compute(it, today)) }
             val session = repository.finishWorkout()
-            if (session != null) timer.skip()
+            if (session != null) {
+                timer.skip()
+                val after = repository.currentState()
+                val report = scoringEngine.compute(after, today)
+                val newBadges = AchievementEngine.evaluate(after, report).filter { it.unlocked && it.id !in before }.map { it.id }
+                summaryBus.post(FinishSummary(report.sessionScores.firstOrNull { it.sessionId == session.id }?.points, newBadges))
+            }
             onFinished(session != null)
         }
     }

@@ -1,7 +1,7 @@
 # Plan de trabajo: app Android de seguimiento de gimnasio (descentralizada)
 
 Fecha: 2026-11-10
-Estado: v1.1. Decisiones de la sección 6 resueltas el 2026-11-10; Fase 0 completada.
+Estado: v1.3. Fases 0, 1 y 2 completadas (2026-11-12).
 
 ## 1. Visión y principios
 
@@ -227,6 +227,9 @@ Estimaciones para una persona a tiempo parcial; ajustar según disponibilidad.
 | 2026-11-10 | **Fórmula de puntaje v1** definida e implementada con pruebas (docs/PUNTAJE_V1.md). |
 | 2026-11-10 | **BouncyCastle** en lugar de libsodium: Java puro, sin JNA, mismo código en pruebas JVM y en Android. |
 | 2026-11-10 | **AGP 9.5 / compileSdk 37**: las versiones actuales de Hilt y AndroidX lo exigen. |
+| 2026-11-12 | **Metas sin efecto retroactivo**: cambiar la meta semanal crea una nueva; las metas de fuerza cumplidas no se pueden eliminar. |
+| 2026-11-12 | **Insignias y rutinas privadas**: no se comparten con amigos (coherente con "solo el puntaje"). |
+| 2026-11-12 | **Clave de depuración en el repositorio** para que los APK de cualquier máquina o del CI se actualicen entre sí. |
 
 Pendiente: nombre definitivo de la app y licencia (recomendación: código abierto, GPL-3.0 o MIT).
 
@@ -240,9 +243,18 @@ Pendiente: nombre definitivo de la app y licencia (recomendación: código abier
 - Historial agrupado por semana, detalle de sesión con desglose del puntaje y borrado por lápida.
 - Capturas de pantalla automatizadas para todas las pantallas (`updateDebugScreenshotTest`).
 
-Pendiente de la Fase 1 original: rutinas/plantillas y calendario de asistencia (pasan a Fase 2).
+Pendiente de la Fase 1 original: rutinas/plantillas y calendario de asistencia (completados en la Fase 2).
 
-Siguientes pasos (Fase 2):
-1. Metas en pantalla (frecuencia semanal y fuerza), rachas e insignias.
-2. Rutinas/plantillas y calendario de asistencia.
-3. CI con GitHub Actions: pruebas JVM, capturas y assembleDebug en cada push.
+**Fase 2 completada (2026-11-12):**
+- Pestaña Progreso: nivel con barra hacia el siguiente, racha, calendario mensual de asistencia, metas e insignias; el historial pasa a una pantalla secundaria.
+- Metas: meta semanal editable (2 a 6 sesiones) sin alterar semanas pasadas; metas de fuerza y de repeticiones con progreso, eliminables solo si no están cumplidas.
+- 15 insignias deterministas con fecha de desbloqueo (`AchievementEngine`).
+- Rutinas: eventos privados `routine_saved` / `routine_deleted`, editor, empezar entrenamiento desde rutina y guardar una sesión como rutina.
+- Resumen al terminar: puntos de la sesión e insignias nuevas.
+- CI con GitHub Actions: pruebas, validación de capturas y APK descargable como artefacto. Clave de depuración versionada para que los APK del CI se instalen encima de los anteriores.
+
+Siguientes pasos (Fase 3, amigos y sincronización P2P):
+1. Pantalla Amigos: mostrar mi QR (tarjeta firmada) y escanear el del amigo.
+2. Transporte por archivo `.gympkg` con FileProvider y apertura desde otras apps.
+3. Sincronización por proximidad con Nearby Connections.
+4. Tablero semanal y mensual entre amigos.

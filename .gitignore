@@ -12,3 +12,7 @@ captures/
 *.aab
 *.jks
 *.keystore
+
+# Clave de depuración compartida (no es secreta): CI y desarrolladores firman igual,
+# así un APK de depuración se instala encima de otro sin perder datos.
+!app/debug.keystore

@@ -1,5 +1,6 @@
 package io.gymtracker.app.ui.picker
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,13 +26,20 @@ data class PickerUiState(
 )
 
 @HiltViewModel
-class ExercisePickerViewModel @Inject constructor(private val repository: WorkoutRepository) : ViewModel() {
+class ExercisePickerViewModel @Inject constructor(
+    private val repository: WorkoutRepository,
+    savedStateHandle: SavedStateHandle,
+) : ViewModel() {
     private val query = MutableStateFlow("")
     private val muscle = MutableStateFlow<MuscleGroup?>(null)
+
+    /** En modo meta solo se ofrecen ejercicios con peso o repeticiones. */
+    private val goalMode: Boolean = savedStateHandle.get<Boolean>(ARG_GOAL_MODE) ?: false
 
     val state: StateFlow<PickerUiState> = combine(repository.observeState(), query, muscle) { training, q, m ->
         val needle = q.normalized()
         val results = training.exercises.values
+            .filter { !goalMode || it.loadType == LoadType.WEIGHTED || it.loadType == LoadType.BODYWEIGHT }
             .filter { m == null || it.primaryMuscle == m }
             .filter { needle.isBlank() || it.name.normalized().contains(needle) }
             .sortedBy { it.name }
@@ -41,19 +49,16 @@ class ExercisePickerViewModel @Inject constructor(private val repository: Workou
     fun setQuery(value: String) { query.value = value }
     fun setMuscle(value: MuscleGroup?) { muscle.value = value }
 
-    fun pick(id: ExerciseId, onPicked: () -> Unit) {
+    /** Crea un ejercicio personalizado y lo devuelve como elegido. */
+    fun create(name: String, muscle: MuscleGroup, equipment: Equipment, loadType: LoadType, onPicked: (ExerciseId) -> Unit) {
         viewModelScope.launch {
-            repository.addExercise(id, repository.lastSetsOf(id))
-            onPicked()
+            val exercise = repository.createCustomExercise(name, muscle, equipment, loadType)
+            onPicked(exercise.id)
         }
     }
 
-    fun create(name: String, muscle: MuscleGroup, equipment: Equipment, loadType: LoadType, onPicked: () -> Unit) {
-        viewModelScope.launch {
-            val exercise = repository.createCustomExercise(name, muscle, equipment, loadType)
-            repository.addExercise(exercise.id)
-            onPicked()
-        }
+    companion object {
+        const val ARG_GOAL_MODE = "goal"
     }
 
     private fun String.normalized(): String =
