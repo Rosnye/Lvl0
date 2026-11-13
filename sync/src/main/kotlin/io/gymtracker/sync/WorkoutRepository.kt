@@ -15,6 +15,7 @@ import io.gymtracker.domain.model.MuscleGroup
 import io.gymtracker.domain.model.Routine
 import io.gymtracker.domain.model.RoutineId
 import io.gymtracker.domain.model.SessionId
+import io.gymtracker.domain.model.SetPlan
 import io.gymtracker.domain.model.WorkoutDraft
 import io.gymtracker.domain.model.WorkoutSession
 import io.gymtracker.domain.projection.TrainingState
@@ -51,9 +52,18 @@ class WorkoutRepository @Inject constructor(
         draftStore.save(transform(current))
     }
 
-    suspend fun addExercise(exerciseId: ExerciseId, lastSets: List<DraftSet>? = null) = updateDraft { d ->
-        val template = lastSets?.map { it.copy(done = false) }?.takeIf { it.isNotEmpty() } ?: listOf(DraftSet())
-        d.copy(entries = d.entries + DraftEntry(exerciseId, template))
+    /** Añade un ejercicio con el plan de series de la última vez, o el de defecto (3 × 10). */
+    suspend fun addExercise(exerciseId: ExerciseId, lastSets: List<DraftSet>? = null) {
+        val plan = planFor(exerciseId, lastSets)
+        updateDraft { d -> d.copy(entries = d.entries + DraftEntry(exerciseId, plan)) }
+    }
+
+    /** Plan inicial de series × repeticiones para un ejercicio. */
+    suspend fun planFor(exerciseId: ExerciseId): List<DraftSet> = planFor(exerciseId, lastSetsOf(exerciseId))
+
+    private suspend fun planFor(exerciseId: ExerciseId, previous: List<DraftSet>?): List<DraftSet> {
+        val loadType = localAuthor.currentState().exercises[exerciseId]?.loadType ?: LoadType.WEIGHTED
+        return previous?.takeIf { it.isNotEmpty() }?.let { SetPlan.fromPrevious(it, loadType) } ?: SetPlan.defaultFor(loadType)
     }
 
     suspend fun discardWorkout() = draftStore.clear()

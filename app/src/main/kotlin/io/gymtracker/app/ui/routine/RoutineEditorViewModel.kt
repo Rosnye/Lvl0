@@ -51,20 +51,12 @@ class RoutineEditorViewModel @Inject constructor(
 
     fun addExercise(id: ExerciseId) {
         viewModelScope.launch {
-            val template = repository.lastSetsOf(id)?.takeIf { it.isNotEmpty() } ?: List(3) { DraftSet() }
-            edit { it.copy(exercises = it.exercises + RoutineExercise(id, template.map { s -> s.copy(done = false) })) }
+            val plan = repository.planFor(id)
+            edit { it.copy(exercises = it.exercises + RoutineExercise(id, plan)) }
         }
     }
 
-    fun updateSet(exerciseIndex: Int, setIndex: Int, transform: (DraftSet) -> DraftSet) = editExercise(exerciseIndex) { e ->
-        if (setIndex !in e.sets.indices) e else e.copy(sets = e.sets.toMutableList().also { it[setIndex] = transform(it[setIndex]) })
-    }
-
-    fun addSet(exerciseIndex: Int) = editExercise(exerciseIndex) { e -> e.copy(sets = e.sets + (e.sets.lastOrNull() ?: DraftSet())) }
-
-    fun removeSet(exerciseIndex: Int, setIndex: Int) = editExercise(exerciseIndex) { e ->
-        e.copy(sets = e.sets.toMutableList().also { if (setIndex in it.indices) it.removeAt(setIndex) })
-    }
+    fun setPlan(exerciseIndex: Int, sets: List<DraftSet>) = editExercise(exerciseIndex) { e -> e.copy(sets = sets.map { it.copy(done = false) }) }
 
     fun removeExercise(exerciseIndex: Int) = edit { r ->
         r.copy(exercises = r.exercises.toMutableList().also { if (exerciseIndex in it.indices) it.removeAt(exerciseIndex) })

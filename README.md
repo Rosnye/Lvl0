@@ -8,7 +8,7 @@ Documentos de diseño:
 
 - [PLAN.md](PLAN.md): visión, funciones, arquitectura, tecnologías y fases.
 - [docs/EVENTOS.md](docs/EVENTOS.md): esquema de eventos v1 (registro solo-anexar, firmado).
-- [docs/PUNTAJE_V1.md](docs/PUNTAJE_V1.md): fórmula de puntaje v1.
+- [docs/PUNTAJE.md](docs/PUNTAJE.md): fórmula de puntaje.
 
 ## Módulos
 
@@ -73,13 +73,15 @@ El estado se persiste, así que sobrevive a la muerte del proceso.
 
 ## Estado
 
-- Fase 0 completada: módulos, esquema de eventos v1, fórmula de puntaje v1, identidad criptográfica, base de datos cifrada.
+- Fase 0 completada: módulos, esquema de eventos v1, fórmula de puntaje, identidad criptográfica, base de datos cifrada.
 - Fase 1 completada: catálogo de 55 ejercicios + personalizados, registro de sesión con borrador persistente,
   temporizador de descanso en primer plano con notificación, historial semanal y detalle con desglose de puntos.
 - Fase 2 completada: Progreso con nivel, calendario de asistencia, metas (semanal, fuerza y repeticiones),
   15 insignias, rutinas y CI con GitHub Actions.
 - Fase 3 completada: amigos por QR o invitación, tablero, puntaje cifrado por archivo o por proximidad
   (Nearby) y apariencia oscura por defecto.
+- Registro simplificado: cada ejercicio es series × repeticiones (sin peso); se marcan las series hechas
+  con un toque y arranca el descanso. Puntaje v2 basado en repeticiones.
 - Siguiente: Fase 4 (respaldo cifrado, onboarding y lanzamiento).
 
 ## CI y APK descargable

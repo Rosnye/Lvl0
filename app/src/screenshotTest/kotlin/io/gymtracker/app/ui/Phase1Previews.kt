@@ -39,20 +39,16 @@ private val draft = WorkoutDraft(
     id = SessionId("draft"),
     startedAtEpochMs = 0,
     entries = listOf(
-        DraftEntry(squat, listOf(
-            DraftSet(reps = 5, weightGrams = 60_000, isWarmup = true, done = true),
-            DraftSet(reps = 5, weightGrams = 100_000, done = true),
-            DraftSet(reps = 5, weightGrams = 100_000),
-        )),
-        DraftEntry(bench, listOf(DraftSet(reps = 8, weightGrams = 70_000))),
+        DraftEntry(squat, listOf(DraftSet(reps = 10, done = true), DraftSet(reps = 10, done = true), DraftSet(reps = 10), DraftSet(reps = 10))),
+        DraftEntry(bench, List(3) { DraftSet(reps = 8) }),
     ),
 )
 
 private fun session(date: String, kg: Int, id: String = date) = WorkoutSession(
     id = SessionId(id), localDate = date, startedAtEpochMs = 0, durationSeconds = 3_300,
     entries = listOf(
-        ExerciseEntry(squat, List(3) { WorkoutSet(reps = 5, weightGrams = kg * 1000) }),
-        ExerciseEntry(bench, List(3) { WorkoutSet(reps = 8, weightGrams = 70_000) }),
+        ExerciseEntry(squat, List(3) { WorkoutSet(reps = 5) }),
+        ExerciseEntry(bench, List(3) { WorkoutSet(reps = 8) }),
     ),
 )
 
@@ -64,7 +60,7 @@ private val sessions = listOf(
 private val training = TrainingState(sessions = sessions)
 private val report = ScoringEngine().compute(training, LocalDate.parse("2026-11-10"))
 private val items = sessions.asReversed().map { s ->
-    SessionItem(s, report.sessionScores.firstOrNull { it.sessionId == s.id }, ScoringEngine().volumeKg(s, training.exercises))
+    SessionItem(s, report.sessionScores.firstOrNull { it.sessionId == s.id }, ScoringEngine().volumeReps(s, training.exercises))
 }
 private val historyState = HistoryUiState(
     weeks = items.groupBy { io.gymtracker.domain.model.Weeks.startOf(it.session.date) }.map { WeekGroup(it.key, it.value) }.sortedByDescending { it.weekStart },

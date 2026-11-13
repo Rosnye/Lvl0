@@ -11,7 +11,8 @@ data class SessionScore(
     val sessionId: SessionId,
     val localDate: LocalDate,
     val basePoints: Int,
-    val volumeKg: Double,
+    /** Repeticiones de trabajo de la sesión. */
+    val volumeReps: Int,
     val volumeBonus: Int,
     val prCount: Int,
     val prBonus: Int,
@@ -34,8 +35,8 @@ data class ScoreReport(
     val totalPoints: Int,
     val currentStreakWeeks: Int,
     val level: Int,
-    /** Mejor 1RM estimado (gramos) por ejercicio. */
-    val bestE1rmGrams: Map<ExerciseId, Int>,
+    /** Mejores repeticiones totales en una sesión, por ejercicio. */
+    val bestRepsByExercise: Map<ExerciseId, Int>,
 ) {
     fun summaryFor(date: LocalDate): ScoreSummary {
         val week = Weeks.startOf(date)

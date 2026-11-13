@@ -16,8 +16,8 @@ fun AchievementId.titleRes(): Int = when (this) {
     AchievementId.STREAK_4 -> R.string.badge_streak_4
     AchievementId.STREAK_12 -> R.string.badge_streak_12
     AchievementId.STRENGTH_GOAL -> R.string.badge_strength_goal
-    AchievementId.VOLUME_10T -> R.string.badge_volume_10t
-    AchievementId.VOLUME_100T -> R.string.badge_volume_100t
+    AchievementId.REPS_1K -> R.string.badge_volume_10t
+    AchievementId.REPS_10K -> R.string.badge_volume_100t
     AchievementId.LEVEL_5 -> R.string.badge_level_5
     AchievementId.LEVEL_10 -> R.string.badge_level_10
     AchievementId.LONG_SESSION -> R.string.badge_long_session
@@ -35,8 +35,8 @@ fun AchievementId.descriptionRes(): Int = when (this) {
     AchievementId.STREAK_4 -> R.string.badge_streak_4_desc
     AchievementId.STREAK_12 -> R.string.badge_streak_12_desc
     AchievementId.STRENGTH_GOAL -> R.string.badge_strength_goal_desc
-    AchievementId.VOLUME_10T -> R.string.badge_volume_10t_desc
-    AchievementId.VOLUME_100T -> R.string.badge_volume_100t_desc
+    AchievementId.REPS_1K -> R.string.badge_volume_10t_desc
+    AchievementId.REPS_10K -> R.string.badge_volume_100t_desc
     AchievementId.LEVEL_5 -> R.string.badge_level_5_desc
     AchievementId.LEVEL_10 -> R.string.badge_level_10_desc
     AchievementId.LONG_SESSION -> R.string.badge_long_session_desc
@@ -54,8 +54,8 @@ fun AchievementId.emoji(): String = when (this) {
     AchievementId.STREAK_4 -> "🔥"
     AchievementId.STREAK_12 -> "⚡"
     AchievementId.STRENGTH_GOAL -> "🎯"
-    AchievementId.VOLUME_10T -> "🏋️"
-    AchievementId.VOLUME_100T -> "🦍"
+    AchievementId.REPS_1K -> "💪"
+    AchievementId.REPS_10K -> "🦍"
     AchievementId.LEVEL_5 -> "🥈"
     AchievementId.LEVEL_10 -> "🥇"
     AchievementId.LONG_SESSION -> "⏱️"

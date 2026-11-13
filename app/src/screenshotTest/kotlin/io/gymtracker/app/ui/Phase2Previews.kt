@@ -44,11 +44,11 @@ private val squat = ExerciseId("builtin:back_squat")
 private val bench = ExerciseId("builtin:bench_press")
 private val pullUp = ExerciseId("builtin:pull_up")
 
-private fun sample(date: LocalDate, squatKg: Int, i: Int) = WorkoutSession(
+private fun sample(date: LocalDate, variation: Int, i: Int) = WorkoutSession(
     id = SessionId("s$i"), localDate = date.toString(), startedAtEpochMs = 0, durationSeconds = if (i == 5) 95 * 60 else 3_300,
     entries = listOf(
-        ExerciseEntry(squat, List(3) { WorkoutSet(reps = 5, weightGrams = squatKg * 1000) }),
-        ExerciseEntry(bench, List(3) { WorkoutSet(reps = 8, weightGrams = 70_000) }),
+        ExerciseEntry(squat, List(3) { WorkoutSet(reps = 8 + variation % 4) }),
+        ExerciseEntry(bench, List(3) { WorkoutSet(reps = 8) }),
         ExerciseEntry(pullUp, List(3) { WorkoutSet(reps = 9) }),
     ),
 )
@@ -61,21 +61,21 @@ private val sessions = (0 until 12).map { i ->
 
 private val goals = listOf(
     Goal(GoalId("f"), GoalSpec.WeeklyFrequency(3), "2026-10-01"),
-    Goal(GoalId("sq"), GoalSpec.Strength(squat, 120_000, 5), "2026-10-01"),
+    Goal(GoalId("sq"), GoalSpec.Strength(squat, 0, 15), "2026-10-01"),
     Goal(GoalId("pu"), GoalSpec.Strength(pullUp, 0, 12), "2026-10-01"),
-    Goal(GoalId("bp"), GoalSpec.Strength(bench, 70_000, 8), "2026-10-01"),
+    Goal(GoalId("bp"), GoalSpec.Strength(bench, 0, 8), "2026-10-01"),
 )
 private val training = TrainingState(sessions = sessions, goals = goals)
 private val report = ScoringEngine().compute(training, today)
 
 private val routines = listOf(
     Routine(RoutineId("a"), "Pierna y empuje", listOf(
-        RoutineExercise(squat, List(3) { DraftSet(reps = 5, weightGrams = 105_000) }),
-        RoutineExercise(bench, List(3) { DraftSet(reps = 8, weightGrams = 70_000) }),
+        RoutineExercise(squat, List(3) { DraftSet(reps = 5) }),
+        RoutineExercise(bench, List(3) { DraftSet(reps = 8) }),
     )),
     Routine(RoutineId("b"), "Tirón", listOf(
         RoutineExercise(pullUp, List(4) { DraftSet(reps = 8) }),
-        RoutineExercise(ExerciseId("builtin:barbell_row"), List(3) { DraftSet(reps = 8, weightGrams = 60_000) }),
+        RoutineExercise(ExerciseId("builtin:barbell_row"), List(3) { DraftSet(reps = 8) }),
     )),
 )
 
@@ -139,5 +139,5 @@ fun RoutineEditorPreview() = Shell(Destination.TRAIN) {
 @Preview(name = "Nueva meta de fuerza", device = PHONE, showSystemUi = true, locale = "es")
 @Composable
 fun NewGoalPreview() = Shell(Destination.PROGRESS) {
-    NewStrengthGoalContent(NewGoalState(exercise = BuiltInExercises.byId[squat], kgText = "120", repsText = "5", currentBest = "107 kg × 5"))
+    NewStrengthGoalContent(NewGoalState(exercise = BuiltInExercises.byId[pullUp], repsText = "15", currentBest = "9 reps"))
 }

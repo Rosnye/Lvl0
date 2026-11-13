@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
-data class SessionItem(val session: WorkoutSession, val score: SessionScore?, val volumeKg: Double)
+data class SessionItem(val session: WorkoutSession, val score: SessionScore?, val volumeReps: Int)
 
 data class WeekGroup(val weekStart: LocalDate, val items: List<SessionItem>) {
     val points: Int get() = items.sumOf { it.score?.points ?: 0 }
@@ -39,7 +39,7 @@ class HistoryViewModel @Inject constructor(
         val report = scoringEngine.compute(training, LocalDate.now())
         val scores = report.sessionScores.associateBy { it.sessionId }
         val items = training.sessions.asReversed().map { s ->
-            SessionItem(s, scores[s.id], scores[s.id]?.volumeKg ?: scoringEngine.volumeKg(s, training.exercises))
+            SessionItem(s, scores[s.id], scores[s.id]?.volumeReps ?: scoringEngine.volumeReps(s, training.exercises))
         }
         HistoryUiState(
             weeks = items.groupBy { Weeks.startOf(it.session.date) }.map { (week, list) -> WeekGroup(week, list) }.sortedByDescending { it.weekStart },

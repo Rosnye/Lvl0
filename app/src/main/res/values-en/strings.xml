@@ -26,7 +26,6 @@
     <string name="workout_title">Workout</string>
     <string name="workout_elapsed">Time: %1$s</string>
     <string name="workout_add_exercise">Add exercise</string>
-    <string name="workout_add_set">Add set</string>
     <string name="workout_finish">Finish</string>
     <string name="workout_discard">Discard</string>
     <string name="workout_discard_confirm">Discard this workout? Checked sets will be lost.</string>
@@ -35,14 +34,7 @@
     <string name="workout_empty">Add your first exercise to get started.</string>
     <string name="workout_remove_exercise">Remove exercise</string>
     <string name="workout_set_number">Set</string>
-    <string name="workout_kg">kg</string>
-    <string name="workout_reps">reps</string>
-    <string name="workout_seconds">sec</string>
-    <string name="workout_meters">m</string>
-    <string name="workout_warmup">W</string>
-    <string name="workout_warmup_desc">Warm-up</string>
     <string name="workout_done_desc">Set done</string>
-    <string name="workout_remove_set">Remove set</string>
     <string name="workout_rest_default">Rest: %1$d s</string>
 
     <string name="timer_title">Rest</string>
@@ -74,7 +66,7 @@
     <string name="history_empty">Your sessions will show up here.</string>
     <string name="history_points">%1$d pts</string>
     <string name="history_summary">%1$d exercises · %2$d sets · %3$s</string>
-    <string name="history_volume">%1$s kg volume</string>
+    <string name="history_volume">%1$d reps</string>
     <string name="history_week">Week of %1$s</string>
     <string name="history_week_total">%1$d sessions · %2$d pts</string>
 
@@ -84,17 +76,12 @@
     <string name="session_delete_confirm">Delete this session? Its points will be removed.</string>
     <string name="session_score_title">Score breakdown</string>
     <string name="session_score_base">Base</string>
-    <string name="session_score_volume">Volume bonus</string>
+    <string name="session_score_volume">Volume bonus (reps)</string>
     <string name="session_score_pr">Personal records (%1$d)</string>
     <string name="session_score_streak">Streak multiplier (%1$d weeks)</string>
     <string name="session_score_goals">Goal bonuses</string>
     <string name="session_score_total">Total</string>
     <string name="session_score_not_valid">This session does not score: it needs at least 3 working sets.</string>
-    <string name="session_set_weighted">%1$d × %2$s kg</string>
-    <string name="session_set_reps">%1$d reps</string>
-    <string name="session_set_timed">%1$s</string>
-    <string name="session_set_distance">%1$d m</string>
-    <string name="session_set_warmup">(warm-up)</string>
 
     <string name="muscle_chest">Chest</string>
     <string name="muscle_back">Back</string>
@@ -154,7 +141,7 @@
     <string name="goal_frequency_reached">Weekly goal reached!</string>
     <string name="goal_frequency_default">Default value. Pick your goal:</string>
     <string name="goal_frequency_change">Sessions per week:</string>
-    <string name="goal_add_strength">New strength goal</string>
+    <string name="goal_add_strength">New reps goal</string>
     <string name="goal_strength_weight">%1$s: %2$s kg × %3$d</string>
     <string name="goal_strength_reps">%1$s: %2$d reps</string>
     <string name="goal_strength_best_weight">Best: %1$s kg × %2$d</string>
@@ -163,13 +150,12 @@
     <string name="goal_achieved_title">Goals reached</string>
     <string name="goal_delete">Delete goal</string>
     <string name="goal_delete_confirm">Delete this goal? It has not been reached yet, so no points are lost.</string>
-    <string name="goal_none">Set a strength or reps goal: reaching it earns you 200 points.</string>
-    <string name="goal_new_title">New strength goal</string>
+    <string name="goal_none">Set a reps goal, for example 15 pull-ups in a row: reaching it earns you 200 points.</string>
+    <string name="goal_new_title">New reps goal</string>
     <string name="goal_exercise">Exercise</string>
     <string name="goal_choose_exercise">Choose exercise</string>
-    <string name="goal_target_kg">Target weight (kg)</string>
-    <string name="goal_target_kg_hint">Leave empty for a reps-only goal.</string>
-    <string name="goal_min_reps">Reps</string>
+    <string name="goal_target_kg_hint">You reach it with one set of at least that many reps.</string>
+    <string name="goal_min_reps">Reps in one set</string>
     <string name="goal_save">Create goal</string>
     <string name="goal_current_best">Your current best: %1$s</string>
 
@@ -197,10 +183,10 @@
     <string name="badge_streak_12_desc">Reach your goal 12 weeks in a row.</string>
     <string name="badge_strength_goal">Goal crushed</string>
     <string name="badge_strength_goal_desc">Reach a strength goal.</string>
-    <string name="badge_volume_10t">10 tonnes</string>
-    <string name="badge_volume_10t_desc">Lift 10,000 kg in total.</string>
-    <string name="badge_volume_100t">100 tonnes</string>
-    <string name="badge_volume_100t_desc">Lift 100,000 kg in total.</string>
+    <string name="badge_volume_10t">A thousand reps</string>
+    <string name="badge_volume_10t_desc">Reach 1,000 reps in total.</string>
+    <string name="badge_volume_100t">Ten thousand reps</string>
+    <string name="badge_volume_100t_desc">Reach 10,000 reps in total.</string>
     <string name="badge_level_5">Level 5</string>
     <string name="badge_level_5_desc">Reach level 5.</string>
     <string name="badge_level_10">Level 10</string>
@@ -283,4 +269,13 @@
     <string name="incoming_unknown">It comes from someone who is not on your friends list. Pair first with the QR code.</string>
     <string name="incoming_invalid">The file contains data with an invalid signature and was discarded.</string>
     <string name="incoming_view_board">View leaderboard</string>
+
+    <string name="plan_sets">Sets</string>
+    <string name="plan_reps">Reps</string>
+    <string name="plan_seconds">Seconds</string>
+    <string name="plan_meters">Meters</string>
+    <string name="plan_tap_done">Tap each set when you finish it:</string>
+    <string name="plan_summary_reps">%1$d × %2$d reps</string>
+    <string name="plan_summary_seconds">%1$d × %2$d s</string>
+    <string name="plan_summary_meters">%1$d × %2$d m</string>
 </resources>

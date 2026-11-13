@@ -30,7 +30,7 @@ data class Routine(
             id = id,
             name = name,
             exercises = session.entries.map { e ->
-                RoutineExercise(e.exerciseId, e.sets.map { DraftSet(it.reps, it.weightGrams, it.durationSeconds, it.distanceMeters, it.isWarmup) })
+                RoutineExercise(e.exerciseId, e.sets.filter { !it.isWarmup }.ifEmpty { e.sets }.map { DraftSet(it.reps, 0, it.durationSeconds, it.distanceMeters) })
             },
         )
     }

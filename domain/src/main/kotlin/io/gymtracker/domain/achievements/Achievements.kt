@@ -20,8 +20,8 @@ enum class AchievementId(val target: Int) {
     STREAK_4(4),
     STREAK_12(12),
     STRENGTH_GOAL(1),
-    VOLUME_10T(10_000),
-    VOLUME_100T(100_000),
+    REPS_1K(1_000),
+    REPS_10K(10_000),
     LEVEL_5(5),
     LEVEL_10(10),
     LONG_SESSION(90),
@@ -29,7 +29,7 @@ enum class AchievementId(val target: Int) {
 
 data class Achievement(
     val id: AchievementId,
-    /** Valor actual de la métrica (sesiones, récords, kg, nivel, minutos...). */
+    /** Valor actual de la métrica (sesiones, récords, repeticiones, nivel, minutos...). */
     val progress: Int,
     val unlockedOn: LocalDate?,
 ) {
@@ -52,7 +52,7 @@ object AchievementEngine {
         var weeklyGoals = 0
         var bestStreak = 0
         var strengthGoals = 0
-        var volumeKg = 0.0
+        var totalReps = 0
         var points = 0
         var longestMinutes = 0
 
@@ -65,7 +65,7 @@ object AchievementEngine {
             val date = score.localDate
             sessions++
             prs += score.prCount
-            volumeKg += score.volumeKg
+            totalReps += score.volumeReps
             points += score.points
             if (score.weeklyGoalReached) {
                 weeklyGoals++
@@ -85,8 +85,8 @@ object AchievementEngine {
             check(AchievementId.STREAK_4, bestStreak, date)
             check(AchievementId.STREAK_12, bestStreak, date)
             check(AchievementId.STRENGTH_GOAL, strengthGoals, date)
-            check(AchievementId.VOLUME_10T, volumeKg.toInt(), date)
-            check(AchievementId.VOLUME_100T, volumeKg.toInt(), date)
+            check(AchievementId.REPS_1K, totalReps, date)
+            check(AchievementId.REPS_10K, totalReps, date)
             check(AchievementId.LEVEL_5, level, date)
             check(AchievementId.LEVEL_10, level, date)
             check(AchievementId.LONG_SESSION, longestMinutes, date)

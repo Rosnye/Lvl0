@@ -58,12 +58,12 @@ class Phase2Test {
     fun `una rutina se convierte en borrador sin series hechas y se crea desde una sesion`() {
         val session = session("2026-11-09", sets = listOf(set(60, warmup = true), set(100), set(100)))
         val routine = Routine.fromSession(RoutineId("r"), "Lunes", session)
-        assertEquals(3, routine.setCount)
+        assertEquals(2, routine.setCount) // el calentamiento no pasa a la rutina
         val draft = routine.toDraft(SessionId("s"), 1_000)
         assertEquals("Lunes", draft.routineName)
-        assertTrue(draft.entries.single().sets.none { it.done })
-        assertTrue(draft.entries.single().sets.first().isWarmup)
-        assertEquals(100_000, draft.entries.single().sets.last().weightGrams)
+        val sets = draft.entries.single().sets
+        assertTrue(sets.none { it.done || it.isWarmup })
+        assertTrue(sets.all { it.reps == 5 && it.weightGrams == 0 }) // sin peso
     }
 
     // --- Metas ---
@@ -143,7 +143,7 @@ class Phase2Test {
         val weeks = listOf("2026-10-19", "2026-10-26", "2026-11-02", "2026-11-09")
         val sessions = weeks.flatMapIndexed { w, monday ->
             val d = LocalDate.parse(monday)
-            listOf(0L, 2L, 4L).map { offset -> session(d.plusDays(offset).toString(), sets = List(3) { set(100 + w * 5) }) }
+            listOf(0L, 2L, 4L).map { offset -> session(d.plusDays(offset).toString(), sets = List(3) { set(0, reps = 5 + w) }) }
         }
         val s = state(sessions)
         val byId = AchievementEngine.evaluate(s, engine.compute(s, today)).associateBy { it.id }
@@ -162,13 +162,35 @@ class Phase2Test {
     fun `insignia de sesion larga y de volumen acumulado`() {
         val long = WorkoutSession(
             id = SessionId("long"), localDate = "2026-11-09", startedAtEpochMs = 0, durationSeconds = 95 * 60,
-            entries = listOf(io.gymtracker.domain.model.ExerciseEntry(SQUAT, List(10) { WorkoutSet(reps = 10, weightGrams = 100_000) })),
+            entries = listOf(io.gymtracker.domain.model.ExerciseEntry(SQUAT, List(10) { WorkoutSet(reps = 100) })),
         )
         val s = state(listOf(long))
         val byId = AchievementEngine.evaluate(s, engine.compute(s, today)).associateBy { it.id }
         assertTrue(byId.getValue(AchievementId.LONG_SESSION).unlocked)
-        assertTrue(byId.getValue(AchievementId.VOLUME_10T).unlocked) // 10 × 10 × 100 kg = 10 000 kg
-        assertFalse(byId.getValue(AchievementId.VOLUME_100T).unlocked)
+        assertTrue(byId.getValue(AchievementId.REPS_1K).unlocked) // 10 series × 100 reps
+        assertFalse(byId.getValue(AchievementId.REPS_10K).unlocked)
+    }
+
+    // --- Plan de series ---
+
+    @Test
+    fun `el plan de series cambia numero y repeticiones conservando las hechas y sin peso`() {
+        val sets = listOf(DraftSet(reps = 8, weightGrams = 50_000, done = true), DraftSet(reps = 8))
+        val resized = io.gymtracker.domain.model.SetPlan.resize(sets, 4, 12, io.gymtracker.domain.model.LoadType.WEIGHTED)
+        assertEquals(4, resized.size)
+        assertTrue(resized.all { it.reps == 12 && it.weightGrams == 0 })
+        assertEquals(listOf(true, false, false, false), resized.map { it.done })
+        assertEquals(12, io.gymtracker.domain.model.SetPlan.valueOf(resized, io.gymtracker.domain.model.LoadType.WEIGHTED))
+    }
+
+    @Test
+    fun `el plan previo descarta calentamientos y el de defecto depende del tipo`() {
+        val previous = listOf(DraftSet(reps = 12, isWarmup = true), DraftSet(reps = 6, done = true), DraftSet(reps = 6), DraftSet(reps = 6))
+        val plan = io.gymtracker.domain.model.SetPlan.fromPrevious(previous, io.gymtracker.domain.model.LoadType.WEIGHTED)
+        assertEquals(3, plan.size)
+        assertTrue(plan.all { it.reps == 6 && !it.done })
+        val timed = io.gymtracker.domain.model.SetPlan.defaultFor(io.gymtracker.domain.model.LoadType.TIMED)
+        assertTrue(timed.size == 3 && timed.all { it.durationSeconds == 30 })
     }
 
     @Test

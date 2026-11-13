@@ -1,12 +1,14 @@
 package io.gymtracker.domain.scoring
 
 /**
- * Constantes de la fórmula de puntaje v1. Ver docs/PUNTAJE_V1.md.
- * Cambiar cualquier valor exige una nueva versión de fórmula: los amigos comparan
- * puntajes calculados con la misma versión.
+ * Constantes de la fórmula de puntaje. Ver docs/PUNTAJE.md.
+ *
+ * v2 (2026-11-13): sin peso. El volumen es el total de repeticiones de trabajo y un récord
+ * es superar tus repeticiones totales de un ejercicio en una sesión. El historial se recalcula
+ * con v2 al actualizar la app; cada resumen compartido lleva su versión.
  */
-object ScoreFormulaV1 {
-    const val VERSION: Int = 1
+object ScoreFormula {
+    const val VERSION: Int = 2
 
     /** Series de trabajo mínimas para que una sesión cuente. */
     const val MIN_WORKING_SETS: Int = 3
@@ -14,21 +16,19 @@ object ScoreFormulaV1 {
     /** Puntos base por la primera sesión válida del día. */
     const val BASE_POINTS: Int = 100
 
-    /** Bono máximo por volumen superior al propio promedio. */
+    /** Bono máximo por volumen (repeticiones) superior al propio promedio. */
     const val VOLUME_BONUS_MAX: Int = 50
     /** Ventana (días) del promedio propio de volumen. */
     const val VOLUME_WINDOW_DAYS: Long = 28
     /** Sesiones previas en la ventana necesarias para tener línea base. */
     const val VOLUME_MIN_HISTORY: Int = 3
 
-    /** Puntos por cada récord personal (1RM estimado). */
+    /** Puntos por cada récord personal (más repeticiones totales en un ejercicio). */
     const val PR_POINTS: Int = 30
     /** Récords que puntúan por sesión como máximo. */
     const val PR_MAX_PER_SESSION: Int = 2
     /** Sesiones previas con el ejercicio antes de que un récord puntúe. */
     const val PR_MIN_PRIOR_SESSIONS: Int = 3
-    /** Repeticiones máximas para estimar 1RM con Epley. */
-    const val PR_MAX_REPS: Int = 12
 
     /** Incremento del multiplicador por cada semana de racha. */
     const val STREAK_STEP: Double = 0.10
@@ -42,7 +42,7 @@ object ScoreFormulaV1 {
 
     /** Bono al alcanzar la meta de frecuencia semanal. */
     const val WEEKLY_GOAL_BONUS: Int = 100
-    /** Bono único al cumplir una meta de fuerza. */
+    /** Bono único al cumplir una meta de repeticiones (o de fuerza, en metas antiguas). */
     const val STRENGTH_GOAL_BONUS: Int = 200
 
     /** nivel = floor(sqrt(total / LEVEL_DIVISOR)) + 1 */

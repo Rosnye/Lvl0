@@ -9,7 +9,7 @@ import io.gymtracker.domain.model.LoadType
 import io.gymtracker.domain.model.Weeks
 import io.gymtracker.domain.model.WorkoutSession
 import io.gymtracker.domain.projection.TrainingState
-import io.gymtracker.domain.scoring.ScoreFormulaV1 as F
+import io.gymtracker.domain.scoring.ScoreFormula as F
 import java.time.LocalDate
 import kotlin.math.floor
 import kotlin.math.min
@@ -29,7 +29,7 @@ class ScoringEngine {
 
         val sessionsByWeek: Map<LocalDate, Int> = sessions.groupingBy { Weeks.startOf(it.date) }.eachCount()
 
-        val bestE1rm = HashMap<ExerciseId, Int>()
+        val bestReps = HashMap<ExerciseId, Int>()
         val priorSessionsPerExercise = HashMap<ExerciseId, Int>()
         val scoredDays = HashSet<LocalDate>()
         val volumeHistory = ArrayList<Pair<LocalDate, Double>>()
@@ -46,8 +46,8 @@ class ScoringEngine {
             // 1. Base
             val base = if (firstOfDay) F.BASE_POINTS else 0
 
-            // 2. Volumen relativo al propio promedio reciente
-            val volume = volumeKg(session, state.exercises)
+            // 2. Volumen (repeticiones) relativo al propio promedio reciente
+            val volume = volumeReps(session, state.exercises).toDouble()
             val windowStart = date.minusDays(F.VOLUME_WINDOW_DAYS)
             val baseline = volumeHistory.filter { (d, _) -> d >= windowStart && d < date }.map { it.second }
             val volumeBonus = if (firstOfDay && baseline.size >= F.VOLUME_MIN_HISTORY && baseline.average() > 0.0) {
@@ -56,14 +56,14 @@ class ScoringEngine {
             } else 0
             volumeHistory += date to volume
 
-            // 3. Récords personales (1RM estimado, Epley)
+            // 3. Récords personales: más repeticiones totales en un ejercicio que nunca
             var prCount = 0
-            for ((exerciseId, e1rm) in bestE1rmBySession(session, state.exercises)) {
+            for ((exerciseId, reps) in repsByExercise(session, state.exercises)) {
                 val prior = priorSessionsPerExercise[exerciseId] ?: 0
-                val best = bestE1rm[exerciseId] ?: 0
-                if (e1rm > best) {
+                val best = bestReps[exerciseId] ?: 0
+                if (reps > best) {
                     if (prior >= F.PR_MIN_PRIOR_SESSIONS) prCount++
-                    bestE1rm[exerciseId] = e1rm
+                    bestReps[exerciseId] = reps
                 }
             }
             session.entries.map { it.exerciseId }.distinct().forEach { priorSessionsPerExercise.merge(it, 1, Int::plus) }
@@ -96,7 +96,7 @@ class ScoringEngine {
                 sessionId = session.id,
                 localDate = date,
                 basePoints = base,
-                volumeKg = volume,
+                volumeReps = volume.toInt(),
                 volumeBonus = volumeBonus,
                 prCount = prCount,
                 prBonus = prBonus,
@@ -125,7 +125,7 @@ class ScoringEngine {
             totalPoints = total,
             currentStreakWeeks = currentStreak,
             level = levelFor(total),
-            bestE1rmGrams = bestE1rm,
+            bestRepsByExercise = bestReps,
         )
     }
 
@@ -153,32 +153,24 @@ class ScoringEngine {
         return (goal?.sessionsPerWeek ?: F.DEFAULT_WEEKLY_TARGET).coerceIn(F.MIN_WEEKLY_TARGET, F.MAX_WEEKLY_TARGET)
     }
 
-    private fun countsLoad(exerciseId: ExerciseId, weightGrams: Int, exercises: Map<ExerciseId, ExerciseDefinition>): Boolean =
+    /** Las repeticiones cuentan para ejercicios con peso o de peso corporal (no tiempo ni distancia). */
+    private fun countsReps(exerciseId: ExerciseId, exercises: Map<ExerciseId, ExerciseDefinition>): Boolean =
         when (exercises[exerciseId]?.loadType ?: LoadType.WEIGHTED) {
-            LoadType.WEIGHTED -> true
-            LoadType.BODYWEIGHT -> weightGrams > 0
+            LoadType.WEIGHTED, LoadType.BODYWEIGHT -> true
             LoadType.TIMED, LoadType.DISTANCE -> false
         }
 
-    /** Volumen en kg: suma de reps × peso de las series de trabajo con carga. */
-    fun volumeKg(session: WorkoutSession, exercises: Map<ExerciseId, ExerciseDefinition>): Double {
-        var grams = 0L
-        for (entry in session.entries) for (set in entry.sets) {
-            if (set.isWorkingSet && set.reps > 0 && countsLoad(entry.exerciseId, set.weightGrams, exercises)) {
-                grams += set.reps.toLong() * set.weightGrams
-            }
-        }
-        return grams / 1000.0
-    }
+    /** Volumen de la sesión: total de repeticiones de las series de trabajo. */
+    fun volumeReps(session: WorkoutSession, exercises: Map<ExerciseId, ExerciseDefinition>): Int =
+        repsByExercise(session, exercises).values.sum()
 
-    /** Mejor 1RM estimado por ejercicio en la sesión. Epley: peso × (1 + reps / 30). */
-    internal fun bestE1rmBySession(session: WorkoutSession, exercises: Map<ExerciseId, ExerciseDefinition>): Map<ExerciseId, Int> {
-        val result = HashMap<ExerciseId, Int>()
-        for (entry in session.entries) for (set in entry.sets) {
-            if (!set.isWorkingSet || set.reps !in 1..F.PR_MAX_REPS) continue
-            if (!countsLoad(entry.exerciseId, set.weightGrams, exercises) || set.weightGrams <= 0) continue
-            val e1rm = epleyGrams(set.weightGrams, set.reps)
-            result.merge(entry.exerciseId, e1rm, ::maxOf)
+    /** Repeticiones de trabajo por ejercicio en la sesión. */
+    internal fun repsByExercise(session: WorkoutSession, exercises: Map<ExerciseId, ExerciseDefinition>): Map<ExerciseId, Int> {
+        val result = LinkedHashMap<ExerciseId, Int>()
+        for (entry in session.entries) {
+            if (!countsReps(entry.exerciseId, exercises)) continue
+            val reps = entry.sets.filter { it.isWorkingSet }.sumOf { it.reps }
+            if (reps > 0) result.merge(entry.exerciseId, reps, Int::plus)
         }
         return result
     }
@@ -191,8 +183,6 @@ class ScoringEngine {
         }
 
     companion object {
-        fun epleyGrams(weightGrams: Int, reps: Int): Int = (weightGrams * (1.0 + reps / 30.0)).roundToInt()
-
         fun levelFor(totalPoints: Int): Int = floor(sqrt(totalPoints.toDouble() / F.LEVEL_DIVISOR)).toInt() + 1
 
         /** Puntos acumulados necesarios para alcanzar [level] (inverso de [levelFor]). */

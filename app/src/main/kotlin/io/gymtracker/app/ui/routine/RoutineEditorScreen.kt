@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.gymtracker.app.R
-import io.gymtracker.app.ui.common.SetValueFields
+import io.gymtracker.app.ui.common.SetPlanEditor
 import io.gymtracker.domain.model.DraftSet
 import io.gymtracker.domain.model.ExerciseId
 import io.gymtracker.domain.model.LoadType
@@ -65,9 +65,7 @@ fun RoutineEditorScreen(
         onBack = onClose,
         onRename = viewModel::rename,
         onAddExercise = onAddExercise,
-        onUpdateSet = viewModel::updateSet,
-        onAddSet = viewModel::addSet,
-        onRemoveSet = viewModel::removeSet,
+        onSetPlan = viewModel::setPlan,
         onRemoveExercise = viewModel::removeExercise,
         onSave = { viewModel.save(onClose) },
         onDelete = { viewModel.delete(onClose) },
@@ -80,9 +78,7 @@ fun RoutineEditorContent(
     onBack: () -> Unit = {},
     onRename: (String) -> Unit = {},
     onAddExercise: () -> Unit = {},
-    onUpdateSet: (Int, Int, (DraftSet) -> DraftSet) -> Unit = { _, _, _ -> },
-    onAddSet: (Int) -> Unit = {},
-    onRemoveSet: (Int, Int) -> Unit = { _, _ -> },
+    onSetPlan: (Int, List<DraftSet>) -> Unit = { _, _ -> },
     onRemoveExercise: (Int) -> Unit = {},
     onSave: () -> Unit = {},
     onDelete: () -> Unit = {},
@@ -127,25 +123,7 @@ fun RoutineEditorContent(
                                 Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.workout_remove_exercise))
                             }
                         }
-                        exercise.sets.forEachIndexed { setIndex, set ->
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Text("${setIndex + 1}", style = MaterialTheme.typography.labelLarge, modifier = Modifier.width(20.dp))
-                                AssistChip(
-                                    onClick = { onUpdateSet(exerciseIndex, setIndex) { it.copy(isWarmup = !it.isWarmup) } },
-                                    label = { Text(stringResource(R.string.workout_warmup)) },
-                                    colors = if (set.isWarmup) AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer) else AssistChipDefaults.assistChipColors(),
-                                )
-                                SetValueFields(set, loadType) { transform -> onUpdateSet(exerciseIndex, setIndex, transform) }
-                                IconButton(onClick = { onRemoveSet(exerciseIndex, setIndex) }) {
-                                    Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.workout_remove_set))
-                                }
-                            }
-                        }
-                        TextButton(onClick = { onAddSet(exerciseIndex) }) {
-                            Icon(Icons.Filled.Add, contentDescription = null)
-                            Spacer(Modifier.width(4.dp))
-                            Text(stringResource(R.string.workout_add_set))
-                        }
+                        SetPlanEditor(exercise.sets, loadType) { sets -> onSetPlan(exerciseIndex, sets) }
                     }
                 }
             }

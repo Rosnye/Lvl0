@@ -7,6 +7,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -50,7 +53,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.gymtracker.app.R
 import io.gymtracker.app.ui.common.Format
-import io.gymtracker.app.ui.common.SetValueFields
+import io.gymtracker.app.ui.common.SetPlanEditor
 import io.gymtracker.domain.model.DraftEntry
 import io.gymtracker.domain.model.DraftSet
 import io.gymtracker.domain.model.ExerciseDefinition
@@ -67,10 +70,8 @@ fun WorkoutScreen(
     WorkoutContent(
         state = state,
         onAddExercise = onAddExercise,
-        onUpdateSet = viewModel::updateSet,
+        onSetPlan = viewModel::setPlan,
         onToggleDone = viewModel::toggleDone,
-        onAddSet = viewModel::addSet,
-        onRemoveSet = viewModel::removeSet,
         onRemoveEntry = viewModel::removeEntry,
         onTimerAdd = viewModel::timerAdd,
         onTimerSkip = viewModel::timerSkip,
@@ -95,10 +96,8 @@ private fun NotificationPermissionRequest() {
 fun WorkoutContent(
     state: WorkoutUiState,
     onAddExercise: () -> Unit = {},
-    onUpdateSet: (Int, Int, (DraftSet) -> DraftSet) -> Unit = { _, _, _ -> },
+    onSetPlan: (Int, List<DraftSet>) -> Unit = { _, _ -> },
     onToggleDone: (Int, Int) -> Unit = { _, _ -> },
-    onAddSet: (Int) -> Unit = {},
-    onRemoveSet: (Int, Int) -> Unit = { _, _ -> },
     onRemoveEntry: (Int) -> Unit = {},
     onTimerAdd: () -> Unit = {},
     onTimerSkip: () -> Unit = {},
@@ -143,10 +142,8 @@ fun WorkoutContent(
                     ExerciseCard(
                         entry = entry,
                         exercise = state.exercises[entry.exerciseId],
-                        onUpdateSet = { setIndex, transform -> onUpdateSet(entryIndex, setIndex, transform) },
+                        onSetPlan = { sets -> onSetPlan(entryIndex, sets) },
                         onToggleDone = { setIndex -> onToggleDone(entryIndex, setIndex) },
-                        onAddSet = { onAddSet(entryIndex) },
-                        onRemoveSet = { setIndex -> onRemoveSet(entryIndex, setIndex) },
                         onRemove = { onRemoveEntry(entryIndex) },
                     )
                 }
@@ -209,62 +206,39 @@ private fun RestTimerBar(state: WorkoutUiState, onAdd: () -> Unit, onSkip: () ->
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ExerciseCard(
     entry: DraftEntry,
     exercise: ExerciseDefinition?,
-    onUpdateSet: (Int, (DraftSet) -> DraftSet) -> Unit,
+    onSetPlan: (List<DraftSet>) -> Unit,
     onToggleDone: (Int) -> Unit,
-    onAddSet: () -> Unit,
-    onRemoveSet: (Int) -> Unit,
     onRemove: () -> Unit,
 ) {
     val loadType = exercise?.loadType ?: LoadType.WEIGHTED
     Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text(exercise?.name ?: entry.exerciseId.value, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                 IconButton(onClick = onRemove) { Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.workout_remove_exercise)) }
             }
-            entry.sets.forEachIndexed { index, set ->
-                SetRow(
-                    index = index,
-                    set = set,
-                    loadType = loadType,
-                    onUpdate = { transform -> onUpdateSet(index, transform) },
-                    onToggleDone = { onToggleDone(index) },
-                    onRemove = { onRemoveSet(index) },
-                )
-            }
-            TextButton(onClick = onAddSet) {
-                Icon(Icons.Filled.Add, contentDescription = null)
-                Spacer(Modifier.width(4.dp))
-                Text(stringResource(R.string.workout_add_set))
+            SetPlanEditor(entry.sets, loadType, onSetPlan)
+            Text(stringResource(R.string.plan_tap_done), style = MaterialTheme.typography.labelMedium)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                entry.sets.forEachIndexed { index, set ->
+                    FilledIconToggleButton(
+                        checked = set.done,
+                        onCheckedChange = { onToggleDone(index) },
+                        modifier = Modifier.size(48.dp),
+                    ) {
+                        if (set.done) {
+                            Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.workout_done_desc))
+                        } else {
+                            Text("${index + 1}", style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
+                }
             }
         }
-    }
-}
-
-@Composable
-private fun SetRow(
-    index: Int,
-    set: DraftSet,
-    loadType: LoadType,
-    onUpdate: ((DraftSet) -> DraftSet) -> Unit,
-    onToggleDone: () -> Unit,
-    onRemove: () -> Unit,
-) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text("${index + 1}", style = MaterialTheme.typography.labelLarge, modifier = Modifier.width(20.dp))
-        AssistChip(
-            onClick = { onUpdate { it.copy(isWarmup = !it.isWarmup) } },
-            label = { Text(stringResource(R.string.workout_warmup)) },
-            colors = if (set.isWarmup) androidx.compose.material3.AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer) else androidx.compose.material3.AssistChipDefaults.assistChipColors(),
-        )
-        SetValueFields(set, loadType, onUpdate)
-        FilledIconToggleButton(checked = set.done, onCheckedChange = { onToggleDone() }) {
-            Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.workout_done_desc))
-        }
-        IconButton(onClick = onRemove) { Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.workout_remove_set)) }
     }
 }

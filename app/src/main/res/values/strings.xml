@@ -28,7 +28,6 @@
     <string name="workout_title">Entrenamiento</string>
     <string name="workout_elapsed">Tiempo: %1$s</string>
     <string name="workout_add_exercise">Añadir ejercicio</string>
-    <string name="workout_add_set">Añadir serie</string>
     <string name="workout_finish">Terminar</string>
     <string name="workout_discard">Descartar</string>
     <string name="workout_discard_confirm">¿Descartar este entrenamiento? Se perderán las series marcadas.</string>
@@ -37,14 +36,7 @@
     <string name="workout_empty">Añade tu primer ejercicio para empezar.</string>
     <string name="workout_remove_exercise">Quitar ejercicio</string>
     <string name="workout_set_number">Serie</string>
-    <string name="workout_kg">kg</string>
-    <string name="workout_reps">reps</string>
-    <string name="workout_seconds">seg</string>
-    <string name="workout_meters">m</string>
-    <string name="workout_warmup">C</string>
-    <string name="workout_warmup_desc">Calentamiento</string>
     <string name="workout_done_desc">Serie hecha</string>
-    <string name="workout_remove_set">Quitar serie</string>
     <string name="workout_rest_default">Descanso: %1$d s</string>
 
     <!-- Temporizador -->
@@ -79,7 +71,7 @@
     <string name="history_empty">Aquí aparecerán tus sesiones.</string>
     <string name="history_points">%1$d pts</string>
     <string name="history_summary">%1$d ejercicios · %2$d series · %3$s</string>
-    <string name="history_volume">%1$s kg de volumen</string>
+    <string name="history_volume">%1$d repeticiones</string>
     <string name="history_week">Semana del %1$s</string>
     <string name="history_week_total">%1$d sesiones · %2$d pts</string>
 
@@ -90,17 +82,12 @@
     <string name="session_delete_confirm">¿Eliminar esta sesión? Se restará su puntaje.</string>
     <string name="session_score_title">Desglose del puntaje</string>
     <string name="session_score_base">Base</string>
-    <string name="session_score_volume">Bono de volumen</string>
+    <string name="session_score_volume">Bono de volumen (repeticiones)</string>
     <string name="session_score_pr">Récords (%1$d)</string>
     <string name="session_score_streak">Multiplicador de racha (%1$d semanas)</string>
     <string name="session_score_goals">Bonos de metas</string>
     <string name="session_score_total">Total</string>
     <string name="session_score_not_valid">Esta sesión no puntúa: necesita al menos 3 series de trabajo.</string>
-    <string name="session_set_weighted">%1$d × %2$s kg</string>
-    <string name="session_set_reps">%1$d reps</string>
-    <string name="session_set_timed">%1$s</string>
-    <string name="session_set_distance">%1$d m</string>
-    <string name="session_set_warmup">(calentamiento)</string>
 
     <!-- Grupos musculares -->
     <string name="muscle_chest">Pecho</string>
@@ -166,7 +153,7 @@
     <string name="goal_frequency_reached">¡Meta de la semana cumplida!</string>
     <string name="goal_frequency_default">Valor por defecto. Elige tu meta:</string>
     <string name="goal_frequency_change">Sesiones por semana:</string>
-    <string name="goal_add_strength">Nueva meta de fuerza</string>
+    <string name="goal_add_strength">Nueva meta de repeticiones</string>
     <string name="goal_strength_weight">%1$s: %2$s kg × %3$d</string>
     <string name="goal_strength_reps">%1$s: %2$d repeticiones</string>
     <string name="goal_strength_best_weight">Mejor: %1$s kg × %2$d</string>
@@ -175,13 +162,12 @@
     <string name="goal_achieved_title">Metas cumplidas</string>
     <string name="goal_delete">Eliminar meta</string>
     <string name="goal_delete_confirm">¿Eliminar esta meta? Aún no está cumplida, así que no se pierde ningún punto.</string>
-    <string name="goal_none">Fíjate una meta de fuerza o de repeticiones: al cumplirla ganas 200 puntos.</string>
-    <string name="goal_new_title">Nueva meta de fuerza</string>
+    <string name="goal_none">Fíjate una meta de repeticiones, por ejemplo 15 dominadas seguidas: al cumplirla ganas 200 puntos.</string>
+    <string name="goal_new_title">Nueva meta de repeticiones</string>
     <string name="goal_exercise">Ejercicio</string>
     <string name="goal_choose_exercise">Elegir ejercicio</string>
-    <string name="goal_target_kg">Peso objetivo (kg)</string>
-    <string name="goal_target_kg_hint">Déjalo vacío para una meta solo de repeticiones.</string>
-    <string name="goal_min_reps">Repeticiones</string>
+    <string name="goal_target_kg_hint">Se cumple cuando hagas una serie con al menos esas repeticiones.</string>
+    <string name="goal_min_reps">Repeticiones en una serie</string>
     <string name="goal_save">Crear meta</string>
     <string name="goal_current_best">Tu mejor marca actual: %1$s</string>
 
@@ -210,10 +196,10 @@
     <string name="badge_streak_12_desc">Cumple tu meta 12 semanas seguidas.</string>
     <string name="badge_strength_goal">Objetivo logrado</string>
     <string name="badge_strength_goal_desc">Cumple una meta de fuerza.</string>
-    <string name="badge_volume_10t">10 toneladas</string>
-    <string name="badge_volume_10t_desc">Levanta 10 000 kg en total.</string>
-    <string name="badge_volume_100t">100 toneladas</string>
-    <string name="badge_volume_100t_desc">Levanta 100 000 kg en total.</string>
+    <string name="badge_volume_10t">Mil repeticiones</string>
+    <string name="badge_volume_10t_desc">Suma 1000 repeticiones en total.</string>
+    <string name="badge_volume_100t">Diez mil repeticiones</string>
+    <string name="badge_volume_100t_desc">Suma 10 000 repeticiones en total.</string>
     <string name="badge_level_5">Nivel 5</string>
     <string name="badge_level_5_desc">Alcanza el nivel 5.</string>
     <string name="badge_level_10">Nivel 10</string>
@@ -302,4 +288,14 @@
     <string name="incoming_unknown">Es de alguien que no está en tu lista de amigos. Vinculaos primero con el código QR.</string>
     <string name="incoming_invalid">El archivo contiene datos con firma inválida y se descartó.</string>
     <string name="incoming_view_board">Ver tablero</string>
+
+    <!-- Series × repeticiones -->
+    <string name="plan_sets">Series</string>
+    <string name="plan_reps">Reps</string>
+    <string name="plan_seconds">Segundos</string>
+    <string name="plan_meters">Metros</string>
+    <string name="plan_tap_done">Toca cada serie al terminarla:</string>
+    <string name="plan_summary_reps">%1$d × %2$d reps</string>
+    <string name="plan_summary_seconds">%1$d × %2$d s</string>
+    <string name="plan_summary_meters">%1$d × %2$d m</string>
 </resources>

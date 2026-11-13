@@ -55,8 +55,10 @@ class WorkoutViewModel @Inject constructor(
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), WorkoutUiState(restSeconds = timer.defaultSeconds))
 
-    fun updateSet(entryIndex: Int, setIndex: Int, transform: (DraftSet) -> DraftSet) = edit { d ->
-        d.mapSet(entryIndex, setIndex, transform)
+    /** Cambia el plan de series × repeticiones de un ejercicio. */
+    fun setPlan(entryIndex: Int, sets: List<DraftSet>) = edit { d ->
+        val entry = d.entries.getOrNull(entryIndex) ?: return@edit d
+        d.copy(entries = d.entries.toMutableList().also { it[entryIndex] = entry.copy(sets = sets) })
     }
 
     /** Marca o desmarca una serie. Al marcar una serie de trabajo arranca el descanso. */
@@ -64,19 +66,7 @@ class WorkoutViewModel @Inject constructor(
         val set = state.value.draft?.entries?.getOrNull(entryIndex)?.sets?.getOrNull(setIndex) ?: return
         val nowDone = !set.done
         edit { d -> d.mapSet(entryIndex, setIndex) { it.copy(done = nowDone) } }
-        if (nowDone && !set.isWarmup) timer.start()
-    }
-
-    fun addSet(entryIndex: Int) = edit { d ->
-        val entry = d.entries[entryIndex]
-        val last = entry.sets.lastOrNull()?.copy(done = false) ?: DraftSet()
-        d.copy(entries = d.entries.toMutableList().also { it[entryIndex] = entry.copy(sets = entry.sets + last) })
-    }
-
-    fun removeSet(entryIndex: Int, setIndex: Int) = edit { d ->
-        val entry = d.entries[entryIndex]
-        val sets = entry.sets.toMutableList().also { it.removeAt(setIndex) }
-        d.copy(entries = d.entries.toMutableList().also { it[entryIndex] = entry.copy(sets = sets) })
+        if (nowDone) timer.start()
     }
 
     fun removeEntry(entryIndex: Int) = edit { d -> d.copy(entries = d.entries.toMutableList().also { it.removeAt(entryIndex) }) }

@@ -50,26 +50,26 @@ class ScoringEngineTest {
         val sets = List(3) { WorkoutSet(durationSeconds = 60) }
         val r = score(session("2026-11-09", sets = sets, exercise = PLANK))
         assertEquals(100, r.totalPoints)
-        assertEquals(0.0, r.sessionScores.single().volumeKg)
+        assertEquals(0, r.sessionScores.single().volumeReps)
     }
 
     @Test
     fun `bono de volumen tras 3 sesiones de linea base`() {
-        // 3 sesiones de 1500 kg (3x5x100) y una cuarta de 2250 kg (3x5x150): ratio 1.5 -> +25
+        // 3 sesiones de 15 reps (3x5) y una cuarta de 3x8 = 24 reps: ratio 1.6 -> +30
         val r = score(
             session("2026-10-20"), session("2026-10-22"), session("2026-10-24"),
-            session("2026-10-27", sets = List(3) { set(150) }),
+            session("2026-10-27", sets = List(3) { set(0, reps = 8) }),
         )
         val last = r.sessionScores.last()
-        assertEquals(25, last.volumeBonus)
+        assertEquals(30, last.volumeBonus)
     }
 
     @Test
     fun `el bono de volumen no es negativo y se limita a 50`() {
         val r = score(
             session("2026-10-20"), session("2026-10-22"), session("2026-10-24"),
-            session("2026-10-26", sets = List(3) { set(50) }),              // ratio 0.5 -> 0
-            session("2026-10-28", sets = List(3) { set(100, reps = 20) }),  // ratio alto -> 50
+            session("2026-10-26", sets = List(3) { set(0, reps = 2) }),   // ratio 0.4 -> 0
+            session("2026-10-28", sets = List(3) { set(0, reps = 20) }),  // ratio alto -> 50
         )
         assertEquals(0, r.sessionScores[3].volumeBonus)
         assertEquals(50, r.sessionScores[4].volumeBonus)
@@ -78,22 +78,22 @@ class ScoringEngineTest {
     @Test
     fun `un record solo puntua con 3 sesiones previas del ejercicio`() {
         val r = score(
-            session("2026-10-20", sets = List(3) { set(100) }),
-            session("2026-10-22", sets = List(3) { set(105) }), // mejora, pero sin historial: no puntúa
-            session("2026-10-24", sets = List(3) { set(110) }),
-            session("2026-10-26", sets = List(3) { set(120) }), // 4ª sesión: récord válido
+            session("2026-10-20", sets = List(3) { set(0, reps = 5) }),
+            session("2026-10-22", sets = List(3) { set(0, reps = 6) }), // mejora, pero sin historial: no puntúa
+            session("2026-10-24", sets = List(3) { set(0, reps = 7) }),
+            session("2026-10-26", sets = List(3) { set(0, reps = 8) }), // 4ª sesión: récord válido
         )
         assertEquals(0, r.sessionScores[1].prBonus)
         assertEquals(30, r.sessionScores[3].prBonus)
         assertEquals(1, r.sessionScores[3].prCount)
-        assertEquals(ScoringEngine.epleyGrams(120_000, 5), r.bestE1rmGrams[SQUAT])
+        assertEquals(24, r.bestRepsByExercise[SQUAT])
     }
 
     @Test
     fun `los records se limitan a 2 por sesion`() {
         val three = listOf(SQUAT, BENCH, io.gymtracker.domain.model.ExerciseId("row")).let { ids ->
-            fun s(date: String, kg: Int) = session(date).copy(entries = ids.map { ExerciseEntry(it, List(3) { set(kg) }) })
-            listOf(s("2026-10-01", 100), s("2026-10-03", 100), s("2026-10-05", 100), s("2026-10-07", 130))
+            fun s(date: String, reps: Int) = session(date).copy(entries = ids.map { ExerciseEntry(it, List(3) { set(0, reps = reps) }) })
+            listOf(s("2026-10-01", 5), s("2026-10-03", 5), s("2026-10-05", 5), s("2026-10-07", 8))
         }
         val r = score(*three.toTypedArray())
         assertEquals(3, r.sessionScores.last().prCount)
@@ -150,6 +150,14 @@ class ScoringEngineTest {
             goals = listOf(goal),
         )
         assertEquals(listOf(0, 200, 0), r.sessionScores.map { it.goalBonus })
+    }
+
+    @Test
+    fun `el peso registrado no cambia el puntaje en la formula v2`() {
+        val light = score(session("2026-11-02", sets = List(3) { set(20) }), session("2026-11-04", sets = List(3) { set(20) }))
+        val heavy = score(session("2026-11-02", sets = List(3) { set(200) }), session("2026-11-04", sets = List(3) { set(200) }))
+        assertEquals(light.totalPoints, heavy.totalPoints)
+        assertEquals(2, light.formulaVersion)
     }
 
     @Test

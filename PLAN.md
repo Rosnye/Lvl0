@@ -125,7 +125,7 @@ data/        Room + SQLCipher, sellado de secretos con Keystore; implementa Even
 sync/        Identidad local, paquetes hacia amigos, transportes Nearby y archivo (Android)
 app/         Jetpack Compose + Hilt: pantallas, navegación, temas (Android)
 ```
-Dependencias: `app → sync → data → domain` y `sync → crypto → domain`. Toda la lógica de negocio y la criptografía se prueban en JVM sin emulador. Ver docs/EVENTOS.md y docs/PUNTAJE_V1.md.
+Dependencias: `app → sync → data → domain` y `sync → crypto → domain`. Toda la lógica de negocio y la criptografía se prueban en JVM sin emulador. Ver docs/EVENTOS.md y docs/PUNTAJE.md.
 
 ## 4. Tecnologías evaluadas
 
@@ -224,11 +224,12 @@ Estimaciones para una persona a tiempo parcial; ajustar según disponibilidad.
 | 2026-11-10 | **Sin iOS.** Kotlin + Jetpack Compose nativo. `domain` y `crypto` quedan en JVM puro igualmente. |
 | 2026-11-10 | **Se acepta Google Play Services** para Nearby Connections en la v1. El transporte por archivo cifrado sigue como alternativa sin GMS. |
 | 2026-11-10 | **Se comparte solo el puntaje.** Los amigos reciben `score_published` (puntos de la semana, total, racha, nivel) y el perfil. Nunca sesiones, ejercicios ni pesos. Consecuencia: los amigos confían en el resumen firmado en vez de recalcularlo. |
-| 2026-11-10 | **Fórmula de puntaje v1** definida e implementada con pruebas (docs/PUNTAJE_V1.md). |
+| 2026-11-10 | **Fórmula de puntaje v1** definida e implementada con pruebas (docs/PUNTAJE.md). |
 | 2026-11-10 | **BouncyCastle** en lugar de libsodium: Java puro, sin JNA, mismo código en pruebas JVM y en Android. |
 | 2026-11-10 | **AGP 9.5 / compileSdk 37**: las versiones actuales de Hilt y AndroidX lo exigen. |
 | 2026-11-12 | **Metas sin efecto retroactivo**: cambiar la meta semanal crea una nueva; las metas de fuerza cumplidas no se pueden eliminar. |
 | 2026-11-12 | **Insignias y rutinas privadas**: no se comparten con amigos (coherente con "solo el puntaje"). |
+| 2026-11-13 | **Ejercicios sin peso, como series × repeticiones**: se rellena una vez por ejercicio y se marcan las series hechas. Fórmula de puntaje v2 basada en repeticiones; metas nuevas de repeticiones. |
 | 2026-11-13 | **Apariencia oscura por defecto**, con opción de claro o seguir al sistema. |
 | 2026-11-13 | **Paquetes como instantánea** (último perfil + último resumen por semana) en lugar de envío incremental: idempotente y sin estado por amigo. |
 | 2026-11-13 | **Google Code Scanner** para leer QR: la app no necesita permiso de cámara. |

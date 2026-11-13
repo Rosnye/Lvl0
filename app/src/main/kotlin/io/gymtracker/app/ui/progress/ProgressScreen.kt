@@ -57,7 +57,7 @@ import io.gymtracker.domain.goals.StrengthProgress
 import io.gymtracker.domain.model.ExerciseDefinition
 import io.gymtracker.domain.model.ExerciseId
 import io.gymtracker.domain.model.GoalId
-import io.gymtracker.domain.scoring.ScoreFormulaV1
+import io.gymtracker.domain.scoring.ScoreFormula
 import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
@@ -216,7 +216,7 @@ private fun FrequencyCard(progress: FrequencyProgress, onChange: (Int) -> Unit) 
                 style = MaterialTheme.typography.labelMedium,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                (ScoreFormulaV1.MIN_WEEKLY_TARGET..ScoreFormulaV1.MAX_WEEKLY_TARGET).forEach { n ->
+                (ScoreFormula.MIN_WEEKLY_TARGET..ScoreFormula.MAX_WEEKLY_TARGET).forEach { n ->
                     FilterChip(selected = progress.target == n, onClick = { if (progress.target != n) onChange(n) }, label = { Text("$n") })
                 }
             }
@@ -315,7 +315,7 @@ private fun BadgesSection(achievements: List<Achievement>) {
 }
 
 private fun badgeValue(id: AchievementId, value: Int): String = when (id) {
-    AchievementId.VOLUME_10T, AchievementId.VOLUME_100T -> "%,d kg".format(value)
+    AchievementId.REPS_1K, AchievementId.REPS_10K -> "%,d reps".format(value)
     AchievementId.LONG_SESSION -> "$value min"
     else -> "$value"
 }

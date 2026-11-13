@@ -34,12 +34,13 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.gymtracker.app.R
 import io.gymtracker.app.ui.common.Format
+import io.gymtracker.app.ui.common.planSummary
 import io.gymtracker.domain.model.ExerciseDefinition
 import io.gymtracker.domain.model.ExerciseId
 import io.gymtracker.domain.model.LoadType
 import io.gymtracker.domain.model.SessionId
 import io.gymtracker.domain.model.WorkoutSet
-import io.gymtracker.domain.scoring.ScoreFormulaV1
+import io.gymtracker.domain.scoring.ScoreFormula
 import kotlin.math.roundToInt
 
 @Composable
@@ -87,7 +88,7 @@ fun SessionDetailContent(
         LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             item {
                 Text(stringResource(R.string.session_duration, Format.duration(item.session.durationSeconds)))
-                Text(stringResource(R.string.history_volume, Format.kg((item.volumeKg * 1000).toInt())))
+                Text(stringResource(R.string.history_volume, item.volumeReps))
                 OutlinedButton(
                     onClick = { askRoutineName = defaultRoutineName },
                     enabled = !routineSaved,
@@ -103,8 +104,9 @@ fun SessionDetailContent(
                     Card(Modifier.fillMaxWidth()) {
                         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(exercise?.name ?: entry.exerciseId.value, style = MaterialTheme.typography.titleMedium)
-                            entry.sets.forEachIndexed { i, set ->
-                                Text("${i + 1}. " + setLabel(set, exercise?.loadType ?: LoadType.WEIGHTED), style = MaterialTheme.typography.bodyMedium)
+                            val loadType = exercise?.loadType ?: LoadType.WEIGHTED
+                            planRuns(entry.sets, loadType).forEach { (count, value) ->
+                                Text(planSummary(count, value, loadType), style = MaterialTheme.typography.bodyLarge)
                             }
                         }
                     }
@@ -140,16 +142,21 @@ fun SessionDetailContent(
     }
 }
 
-@Composable
-private fun setLabel(set: WorkoutSet, loadType: LoadType): String {
-    val base = when (loadType) {
-        LoadType.WEIGHTED, LoadType.BODYWEIGHT ->
-            if (set.weightGrams > 0) stringResource(R.string.session_set_weighted, set.reps, Format.kg(set.weightGrams))
-            else stringResource(R.string.session_set_reps, set.reps)
-        LoadType.TIMED -> stringResource(R.string.session_set_timed, Format.mmss(set.durationSeconds.toLong()))
-        LoadType.DISTANCE -> stringResource(R.string.session_set_distance, set.distanceMeters)
+/** Agrupa series consecutivas con el mismo valor: [10, 10, 10, 8] -> (3, 10), (1, 8). Sin calentamientos. */
+private fun planRuns(sets: List<WorkoutSet>, loadType: LoadType): List<Pair<Int, Int>> {
+    val values = sets.filter { !it.isWarmup }.map {
+        when (loadType) {
+            LoadType.WEIGHTED, LoadType.BODYWEIGHT -> it.reps
+            LoadType.TIMED -> it.durationSeconds
+            LoadType.DISTANCE -> it.distanceMeters
+        }
     }
-    return if (set.isWarmup) "$base ${stringResource(R.string.session_set_warmup)}" else base
+    val runs = mutableListOf<Pair<Int, Int>>()
+    for (v in values) {
+        val last = runs.lastOrNull()
+        if (last != null && last.second == v) runs[runs.lastIndex] = last.first + 1 to v else runs += 1 to v
+    }
+    return runs
 }
 
 @Composable
@@ -173,7 +180,7 @@ private fun ScoreCard(item: SessionItem) {
                 Text(stringResource(R.string.session_score_total), style = MaterialTheme.typography.titleSmall)
                 Text("${score.points}", style = MaterialTheme.typography.titleSmall)
             }
-            Text("v${ScoreFormulaV1.VERSION}", style = MaterialTheme.typography.labelSmall)
+            Text("v${ScoreFormula.VERSION}", style = MaterialTheme.typography.labelSmall)
         }
     }
 }

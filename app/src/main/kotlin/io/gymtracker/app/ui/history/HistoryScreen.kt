@@ -53,7 +53,7 @@ fun HistoryContent(state: HistoryUiState, onOpenSession: (SessionId) -> Unit = {
                                 stringResource(R.string.history_summary, item.session.entries.size, item.session.workingSetCount, Format.duration(item.session.durationSeconds)),
                                 style = MaterialTheme.typography.bodySmall,
                             )
-                            Text(stringResource(R.string.history_volume, Format.kg((item.volumeKg * 1000).toInt())), style = MaterialTheme.typography.bodySmall)
+                            Text(stringResource(R.string.history_volume, item.volumeReps), style = MaterialTheme.typography.bodySmall)
                         }
                         Text(stringResource(R.string.history_points, item.score?.points ?: 0), style = MaterialTheme.typography.titleMedium)
                     }

@@ -27,7 +27,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.gymtracker.app.R
-import io.gymtracker.app.ui.common.Format
 import io.gymtracker.app.ui.common.NumberField
 import io.gymtracker.domain.model.ExerciseDefinition
 import io.gymtracker.domain.model.ExerciseId
@@ -38,16 +37,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/** Meta de repeticiones: hacer al menos [minReps] repeticiones en una serie de un ejercicio. */
 data class NewGoalState(
     val exercise: ExerciseDefinition? = null,
-    val kgText: String = "",
-    val repsText: String = "5",
-    /** Mejor serie registrada del ejercicio elegido, como texto ("100 kg × 5"). */
+    val repsText: String = "15",
+    /** Mejor serie registrada del ejercicio elegido ("12 reps"). */
     val currentBest: String? = null,
 ) {
-    val targetGrams: Int? get() = if (kgText.isBlank()) 0 else Format.parseKg(kgText)
     val minReps: Int get() = repsText.toIntOrNull() ?: 0
-    val canSave: Boolean get() = exercise != null && targetGrams != null && minReps in 1..100 && (targetGrams!! > 0 || minReps > 1)
+    val canSave: Boolean get() = exercise != null && minReps in 2..999
 }
 
 @HiltViewModel
@@ -59,27 +57,20 @@ class NewStrengthGoalViewModel @Inject constructor(private val repository: Worko
         viewModelScope.launch {
             val training = repository.currentState()
             val best = training.sessions.flatMap { s -> s.entries.filter { it.exerciseId == id }.flatMap { it.sets } }
-                .filter { it.isWorkingSet && it.reps > 0 }
-                .maxWithOrNull(compareBy({ it.weightGrams }, { it.reps }))
-            _state.update {
-                it.copy(
-                    exercise = training.exercises[id],
-                    currentBest = best?.let { b -> if (b.weightGrams > 0) "${Format.kg(b.weightGrams)} kg × ${b.reps}" else "${b.reps} reps" },
-                )
-            }
+                .filter { it.isWorkingSet }
+                .maxOfOrNull { it.reps }
+            _state.update { it.copy(exercise = training.exercises[id], currentBest = best?.takeIf { b -> b > 0 }?.let { b -> "$b reps" }) }
         }
     }
 
-    fun setKg(text: String) = _state.update { it.copy(kgText = text) }
     fun setReps(text: String) = _state.update { it.copy(repsText = text) }
 
     fun save(onDone: () -> Unit) {
         val s = _state.value
         val exercise = s.exercise ?: return
-        val grams = s.targetGrams ?: return
         if (!s.canSave) return
         viewModelScope.launch {
-            repository.createStrengthGoal(exercise.id, grams, s.minReps)
+            repository.createStrengthGoal(exercise.id, targetWeightGrams = 0, minReps = s.minReps)
             onDone()
         }
     }
@@ -100,7 +91,7 @@ fun NewStrengthGoalScreen(
             onPickedConsumed()
         }
     }
-    NewStrengthGoalContent(state, onClose, onChooseExercise, viewModel::setKg, viewModel::setReps) { viewModel.save(onClose) }
+    NewStrengthGoalContent(state, onClose, onChooseExercise, viewModel::setReps) { viewModel.save(onClose) }
 }
 
 @Composable
@@ -108,7 +99,6 @@ fun NewStrengthGoalContent(
     state: NewGoalState,
     onBack: () -> Unit = {},
     onChooseExercise: () -> Unit = {},
-    onKg: (String) -> Unit = {},
     onReps: (String) -> Unit = {},
     onSave: () -> Unit = {},
 ) {
@@ -123,10 +113,7 @@ fun NewStrengthGoalContent(
                 Text(state.exercise?.name ?: stringResource(R.string.goal_choose_exercise))
             }
             state.currentBest?.let { Text(stringResource(R.string.goal_current_best, it), style = MaterialTheme.typography.bodySmall) }
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                NumberField(state.kgText, stringResource(R.string.goal_target_kg), Modifier.weight(1f), decimal = true, onChange = onKg)
-                NumberField(state.repsText, stringResource(R.string.goal_min_reps), Modifier.weight(1f), onChange = onReps)
-            }
+            NumberField(state.repsText, stringResource(R.string.goal_min_reps), Modifier.fillMaxWidth(), onChange = onReps)
             Text(stringResource(R.string.goal_target_kg_hint), style = MaterialTheme.typography.bodySmall)
             Button(onClick = onSave, enabled = state.canSave, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.goal_save)) }
         }
