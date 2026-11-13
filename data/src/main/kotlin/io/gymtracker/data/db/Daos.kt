@@ -46,6 +46,9 @@ interface FriendDao {
     @Query("SELECT * FROM friends ORDER BY nickname")
     fun observeAll(): Flow<List<FriendEntity>>
 
-    @Query("UPDATE friends SET lastSentSeq = :seq WHERE authorId = :authorId AND lastSentSeq < :seq")
-    suspend fun markSent(authorId: String, seq: Long)
+    @Query("SELECT * FROM friends")
+    suspend fun all(): List<FriendEntity>
+
+    @Query("UPDATE friends SET lastSyncEpochMs = :at WHERE authorId = :authorId")
+    suspend fun markSynced(authorId: String, at: Long)
 }

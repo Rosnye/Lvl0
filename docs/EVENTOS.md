@@ -75,7 +75,14 @@ Código: `domain/src/main/kotlin/io/gymtracker/domain/event/`.
 ```
 No incluye ejercicios, pesos, fechas de sesión, duración ni notas.
 
-## Sincronización
+## Sincronización (Fase 3)
+
+- **Vinculación:** cada usuario muestra un QR (o comparte un texto) con su invitación `GT1:` + base64url de su `FriendCard` firmada: `authorId`, clave pública de cifrado X25519 y apodo. Quien la escanea guarda al amigo. Es mutuo: cada uno escanea el código del otro.
+- **Instantánea:** cada paquete lleva el último `profile_updated` y el último `score_published` de cada semana (hasta 52 semanas). Así no hace falta recordar qué se envió y recibir dos veces lo mismo no tiene efecto. Antes de construirlo se publica un resumen nuevo si el puntaje cambió (por ejemplo, racha rota).
+- **Formato:** `PacketCipher.seal(gzip(JSON canónico de Packet), clave del amigo)`. Un año de resúmenes ocupa unos pocos KB, muy por debajo del límite de 32 KB de un payload de Nearby.
+- **Transportes:** archivo `.gympkg` compartido por cualquier mensajero (se abre con la app o desde Amigos → Importar archivo) y Nearby Connections cuando ambos están cerca. En Nearby se anuncia el inicio del `authorId` (16 hex); solo se conecta con amigos y pide la conexión el de id menor.
+
+Detalle anterior a la Fase 3, aún válido para la recepción:
 
 - **Paquete** = `{ version: 1, events: [SignedEvent...] }` con los eventos `FRIENDS` del autor local con `seq > lastSentSeq` del amigo, serializado y cifrado para ese amigo (`crypto/PacketCipher`).
 - El receptor abre el paquete, comprueba que todos los eventos son de un único autor **ya vinculado**, valida firma y visibilidad, descarta `seq` ya conocidos y anexa el resto.

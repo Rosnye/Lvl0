@@ -93,7 +93,7 @@ private val progressState = ProgressUiState(
 
 @Composable
 private fun Shell(dest: Destination, content: @Composable () -> Unit) {
-    GymTrackerTheme(darkTheme = false) {
+    GymTrackerTheme(darkTheme = true) {
         AppScaffold(selected = dest, onSelect = {}) { padding -> Box(Modifier.padding(padding)) { content() } }
     }
 }

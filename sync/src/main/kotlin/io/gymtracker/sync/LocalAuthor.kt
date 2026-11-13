@@ -48,6 +48,14 @@ class LocalAuthor @Inject constructor(
 
     suspend fun currentState(): TrainingState = Projector.project(eventLog.readAll(authorId))
 
+    /** Publica un resumen nuevo solo si cambió desde el último (racha rota, semana nueva...). */
+    suspend fun publishScoreIfChanged(today: LocalDate = LocalDate.now()) = mutex.withLock {
+        val events = eventLog.readAll(authorId)
+        val summary = scoringEngine.compute(Projector.project(events), today).summaryFor(today)
+        val last = events.lastOrNull { it.payload is EventPayload.ScorePublished }?.payload as? EventPayload.ScorePublished
+        if (last?.summary != summary) appendLocked(EventPayload.ScorePublished(summary))
+    }
+
     fun observeState(): Flow<TrainingState> = eventLog.observe(authorId).map(Projector::project)
 
     private suspend fun appendLocked(payload: EventPayload): SignedEvent {

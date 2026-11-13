@@ -76,6 +76,11 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
+    // Amigos: generar el QR propio (ZXing, Java puro) y escanear el del amigo (Google Code Scanner).
+    implementation(project(":crypto"))
+    implementation(libs.zxing.core)
+    implementation(libs.play.services.code.scanner)
+
     testImplementation(libs.kotlin.test.junit5)
     screenshotTestImplementation(libs.compose.ui.tooling)
     screenshotTestImplementation(libs.screenshot.validation.api)

@@ -12,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.gymtracker.app.R
+import io.gymtracker.app.settings.ThemeMode
 import io.gymtracker.app.ui.common.FinishSummary
 import io.gymtracker.app.ui.common.Format
 import io.gymtracker.app.ui.common.emoji
@@ -48,6 +50,7 @@ fun HomeScreen(
         onOpenSession = onOpenSession,
         onEditRoutine = onEditRoutine,
         onDismissSummary = viewModel::dismissSummary,
+        onTheme = viewModel::setTheme,
     )
 }
 
@@ -58,6 +61,7 @@ fun HomeContent(
     onOpenSession: (SessionId) -> Unit = {},
     onEditRoutine: (RoutineId?) -> Unit = {},
     onDismissSummary: () -> Unit = {},
+    onTheme: (ThemeMode) -> Unit = {},
 ) {
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -143,10 +147,17 @@ fun HomeContent(
         }
 
         Card(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(stringResource(R.string.home_identity), style = MaterialTheme.typography.labelLarge)
-                Text(state.fingerprint, style = MaterialTheme.typography.titleMedium)
-                Text(stringResource(R.string.home_identity_hint), style = MaterialTheme.typography.bodySmall)
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(stringResource(R.string.settings_appearance), style = MaterialTheme.typography.titleSmall)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(
+                        ThemeMode.DARK to R.string.theme_dark,
+                        ThemeMode.LIGHT to R.string.theme_light,
+                        ThemeMode.SYSTEM to R.string.theme_system,
+                    ).forEach { (mode, label) ->
+                        FilterChip(selected = state.themeMode == mode, onClick = { onTheme(mode) }, label = { Text(stringResource(label)) })
+                    }
+                }
             }
         }
     }

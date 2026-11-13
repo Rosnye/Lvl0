@@ -57,9 +57,9 @@ Las capturas de referencia quedan en `app/src/screenshotTestDebug/reference/` y
 |---|---|---|
 | ![Inicio](docs/capturas/inicio-rutinas.png) | ![Entrenamiento](docs/capturas/entrenamiento-descanso.png) | ![Progreso](docs/capturas/progreso.png) |
 
-| Editor de rutina | Nueva meta | Detalle de sesión |
+| Amigos y tablero | Mi código | Editor de rutina |
 |---|---|---|
-| ![Rutina](docs/capturas/editor-rutina.png) | ![Meta](docs/capturas/nueva-meta.png) | ![Detalle](docs/capturas/detalle-sesion.png) |
+| ![Amigos](docs/capturas/amigos.png) | ![QR](docs/capturas/mi-codigo.png) | ![Rutina](docs/capturas/editor-rutina.png) |
 
 Más capturas en [docs/capturas](docs/capturas), incluida la pantalla de Progreso completa.
 
@@ -78,7 +78,9 @@ El estado se persiste, así que sobrevive a la muerte del proceso.
   temporizador de descanso en primer plano con notificación, historial semanal y detalle con desglose de puntos.
 - Fase 2 completada: Progreso con nivel, calendario de asistencia, metas (semanal, fuerza y repeticiones),
   15 insignias, rutinas y CI con GitHub Actions.
-- Siguiente: Fase 3 (amigos y sincronización P2P).
+- Fase 3 completada: amigos por QR o invitación, tablero, puntaje cifrado por archivo o por proximidad
+  (Nearby) y apariencia oscura por defecto.
+- Siguiente: Fase 4 (respaldo cifrado, onboarding y lanzamiento).
 
 ## CI y APK descargable
 

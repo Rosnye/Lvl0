@@ -11,7 +11,7 @@
     <string name="save">Save</string>
 
     <string name="home_identity">Your identity</string>
-    <string name="home_identity_hint">This fingerprint identifies you to your friends. Nobody else knows it.</string>
+    <string name="home_identity_hint">This fingerprint identifies you to your friends. Compare it in person when you pair.</string>
     <string name="home_total_points">Total points</string>
     <string name="home_week_points">This week</string>
     <string name="home_level">Level %1$d</string>
@@ -216,4 +216,71 @@
     <string name="routine_save_from_session">Save as routine</string>
     <string name="routine_saved">Routine saved</string>
     <string name="routine_default_name">Routine from %1$s</string>
+
+    <string name="settings_appearance">Appearance</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_system">System</string>
+
+    <string name="friends_title">Friends</string>
+    <string name="friends_pick_nickname_title">Pick a nickname</string>
+    <string name="friends_pick_nickname_text">It is the only thing your friends see next to your score. Your workouts never leave the phone.</string>
+    <string name="friends_nickname">Nickname</string>
+    <string name="friends_edit_nickname">Change nickname</string>
+    <string name="friends_fingerprint">Fingerprint: %1$s</string>
+    <string name="friends_fingerprint_hint">When you pair, compare fingerprints in person to confirm it is really you.</string>
+    <string name="friends_my_code">My code</string>
+    <string name="friends_add">Add friend</string>
+    <string name="friends_scan">Scan their QR code</string>
+    <string name="friends_paste">Paste invitation</string>
+    <string name="friends_share_invite">Share invitation</string>
+    <string name="friends_invite_message">Add me on GymTracker so we can compare scores. Open Friends → Add friend → Paste invitation and paste this code:
+
+%1$s</string>
+    <string name="friends_my_code_text">Ask your friend to scan this code from Friends → Add friend. Then scan theirs.</string>
+    <string name="friends_paste_hint">Paste the invitation message you received.</string>
+    <string name="friends_added">%1$s is now your friend. Ask them to add you too to see their score.</string>
+    <string name="friends_already">%1$s was already on your list.</string>
+    <string name="friends_invalid">This is not a valid GymTracker invitation.</string>
+    <string name="friends_self">That is your own code.</string>
+    <string name="friends_scan_failed">Could not open the scanner. Use the message invitation instead.</string>
+
+    <string name="board_title">Leaderboard</string>
+    <string name="board_week">This week</string>
+    <string name="board_total">Total</string>
+    <string name="board_you">%1$s (you)</string>
+    <string name="board_meta">Level %1$d · streak %2$d</string>
+    <string name="board_empty">Add friends to compete. You only share your score: no exercises, weights or notes.</string>
+    <string name="board_points">%1$d pts</string>
+
+    <string name="friends_list">Your friends</string>
+    <string name="friends_last_sync">Last score received: %1$s</string>
+    <string name="friends_never_synced">No score received yet</string>
+    <string name="friends_send">Send my score</string>
+    <string name="friends_remove">Remove</string>
+    <string name="friends_remove_confirm">Remove %1$s? You will stop receiving their score. You can pair again anytime.</string>
+    <string name="sync_title">Sync</string>
+    <string name="sync_text">Nearby: both open this screen and tap Sync nearby. Remotely: send your score as an encrypted file through any messenger; only your friend can open it.</string>
+    <string name="sync_nearby">Sync nearby</string>
+    <string name="sync_import">Import file</string>
+    <string name="sync_nearby_title">Looking for nearby friends</string>
+    <string name="sync_nearby_text">Keep this window open. Your friend must tap Sync nearby on their phone.</string>
+    <string name="sync_nearby_found">Nearby: %1$s</string>
+    <string name="sync_nearby_synced">Synced with: %1$s</string>
+    <string name="sync_nearby_stopped">Search finished.</string>
+    <string name="sync_nearby_failed">Could not start searching. Check that Bluetooth and location are on.</string>
+    <string name="sync_nearby_permissions">Syncing nearby needs the nearby devices permission.</string>
+    <string name="sync_stop">Stop</string>
+    <string name="sync_done">Done</string>
+    <string name="sync_share_title">Send score to %1$s</string>
+
+    <string name="incoming_title">Score received</string>
+    <string name="incoming_ok">%1$s\'s score updated.</string>
+    <string name="incoming_ok_none">%1$s\'s score was already up to date.</string>
+    <string name="incoming_error_title">Could not open the file</string>
+    <string name="incoming_not_for_me">This file is for someone else or is damaged.</string>
+    <string name="incoming_corrupt">The file is not a valid GymTracker score.</string>
+    <string name="incoming_unknown">It comes from someone who is not on your friends list. Pair first with the QR code.</string>
+    <string name="incoming_invalid">The file contains data with an invalid signature and was discarded.</string>
+    <string name="incoming_view_board">View leaderboard</string>
 </resources>

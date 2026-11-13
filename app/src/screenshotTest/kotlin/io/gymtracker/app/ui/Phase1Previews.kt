@@ -1,6 +1,5 @@
 package io.gymtracker.app.ui
 
-import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -73,7 +72,7 @@ private val historyState = HistoryUiState(
 )
 
 @Composable
-private fun Shell(dest: Destination, darkTheme: Boolean = false, content: @Composable () -> Unit) {
+private fun Shell(dest: Destination, darkTheme: Boolean = true, content: @Composable () -> Unit) {
     GymTrackerTheme(darkTheme = darkTheme) {
         AppScaffold(selected = dest, onSelect = {}) { padding -> Box(Modifier.padding(padding)) { content() } }
     }
@@ -87,9 +86,9 @@ fun WorkoutTimerPreview() = Shell(Destination.TRAIN) {
 }
 
 @PreviewTest
-@Preview(name = "Entrenamiento oscuro", device = PHONE, showSystemUi = true, locale = "es", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "Entrenamiento claro", device = PHONE, showSystemUi = true, locale = "es")
 @Composable
-fun WorkoutDarkPreview() = Shell(Destination.TRAIN, darkTheme = true) {
+fun WorkoutLightPreview() = Shell(Destination.TRAIN, darkTheme = false) {
     WorkoutContent(WorkoutUiState(draft = draft, exercises = BuiltInExercises.byId, elapsedSeconds = 1_505))
 }
 

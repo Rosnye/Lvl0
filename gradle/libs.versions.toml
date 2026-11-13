@@ -21,6 +21,7 @@ playServicesNearby = "19.5.1"
 camerax = "1.6.2"
 mlkitBarcode = "17.3.0"
 zxing = "3.5.4"
+codeScanner = "16.1.0"
 junit = "5.14.4"
 screenshot = "0.0.1-alpha16"
 turbine = "1.2.1"
@@ -77,6 +78,7 @@ camerax-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref =
 camerax-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
 mlkit-barcode = { module = "com.google.mlkit:barcode-scanning", version.ref = "mlkitBarcode" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
+play-services-code-scanner = { module = "com.google.android.gms:play-services-code-scanner", version.ref = "codeScanner" }
 
 # Pruebas
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }

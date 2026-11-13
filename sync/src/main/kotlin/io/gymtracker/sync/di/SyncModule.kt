@@ -8,7 +8,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.gymtracker.domain.scoring.ScoringEngine
 import io.gymtracker.sync.transport.FilePacketTransport
-import io.gymtracker.sync.transport.NearbyTransport
 import javax.inject.Singleton
 
 @Module
@@ -16,5 +15,4 @@ import javax.inject.Singleton
 object SyncModule {
     @Provides @Singleton fun scoringEngine(): ScoringEngine = ScoringEngine()
     @Provides @Singleton fun fileTransport(@ApplicationContext context: Context) = FilePacketTransport(context)
-    @Provides @Singleton fun nearbyTransport(@ApplicationContext context: Context) = NearbyTransport(context)
 }

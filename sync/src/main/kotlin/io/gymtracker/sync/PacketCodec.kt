@@ -1,70 +1,54 @@
 package io.gymtracker.sync
 
-import io.gymtracker.crypto.Ed25519Verifier
-import io.gymtracker.crypto.PacketCipher
-import io.gymtracker.crypto.PacketFormatException
+import io.gymtracker.crypto.PacketBuilder
+import io.gymtracker.crypto.RejectReason
 import io.gymtracker.data.db.FriendDao
-import io.gymtracker.domain.event.EventCodec
-import io.gymtracker.domain.event.Packet
 import io.gymtracker.domain.event.EventLog
-import io.gymtracker.domain.event.EventValidator
-import io.gymtracker.domain.event.ValidationResult
-import io.gymtracker.domain.event.Visibility
+import io.gymtracker.domain.event.FriendSnapshot
 import io.gymtracker.domain.model.AuthorId
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Construye paquetes cifrados para un amigo y procesa los recibidos. Independiente del
- * transporte: Nearby, archivo o (en el futuro) relés usan este mismo código.
+ * Construye paquetes cifrados para un amigo y procesa los recibidos. Lo usan todos los
+ * transportes (archivo y Nearby). Cada paquete lleva una instantánea completa
+ * ([FriendSnapshot]), así recibir dos veces lo mismo no tiene efecto.
  */
 @Singleton
 class PacketCodec @Inject constructor(
     private val identityManager: IdentityManager,
     private val eventLog: EventLog,
     private val friendDao: FriendDao,
+    private val localAuthor: LocalAuthor,
 ) {
-    /** Paquete con los eventos FRIENDS aún no enviados a ese amigo, o null si no hay nada nuevo. */
-    suspend fun buildFor(friendId: AuthorId): Outgoing? {
+    suspend fun buildFor(friendId: AuthorId, maxWeeks: Int = FriendSnapshot.DEFAULT_MAX_WEEKS): ByteArray? {
         val friend = friendDao.get(friendId.hex) ?: return null
-        val me = identityManager.identity.authorId
-        val events = eventLog.readSince(me, friend.lastSentSeq, Visibility.FRIENDS)
-        if (events.isEmpty()) return null
-        val plaintext = EventCodec.canonical.encodeToString(Packet.serializer(), Packet(events = events)).encodeToByteArray()
-        return Outgoing(friendId, events.last().seq, PacketCipher.seal(plaintext, friend.boxPublicKeyHex))
+        localAuthor.publishScoreIfChanged()
+        val events = FriendSnapshot.select(eventLog.readAll(identityManager.identity.authorId), maxWeeks)
+        return PacketBuilder.build(events, friend.boxPublicKeyHex)
     }
 
-    /** Llamar solo cuando el transporte confirme la entrega. */
-    suspend fun markDelivered(outgoing: Outgoing) = friendDao.markSent(outgoing.friendId.hex, outgoing.upToSeq)
-
-    suspend fun receive(packet: ByteArray): ReceiveResult {
-        val plaintext = try {
-            identityManager.identity.open(packet)
-        } catch (e: PacketFormatException) {
-            return ReceiveResult.Rejected(e.message ?: "paquete inválido")
-        }
-        val parsed = runCatching { EventCodec.lenient.decodeFromString(Packet.serializer(), plaintext.decodeToString()) }
-            .getOrElse { return ReceiveResult.Rejected("contenido ilegible") }
-
-        val authors = parsed.events.map { it.authorId }.distinct()
-        val author = authors.singleOrNull() ?: return ReceiveResult.Rejected("un paquete debe tener un solo autor")
-        val friend = friendDao.get(author.hex) ?: return ReceiveResult.Rejected("autor desconocido: no es un amigo vinculado")
-
-        var accepted = 0
-        var last = eventLog.lastSeq(author)
-        for (event in parsed.events.sortedBy { it.seq }) {
-            if (event.seq <= last) continue // ya lo teníamos
-            when (val v = EventValidator.validateIncoming(event, Ed25519Verifier)) {
-                is ValidationResult.Rejected -> return ReceiveResult.Rejected(v.reason)
-                ValidationResult.Ok -> {
+    suspend fun receive(bytes: ByteArray, now: Long = System.currentTimeMillis()): ReceiveResult {
+        if (bytes.size > MAX_PACKET_BYTES) return ReceiveResult.Rejected(RejectReason.CORRUPT)
+        val friends = friendDao.all().associateBy { it.authorId }
+        return when (val opened = PacketBuilder.open(identityManager.identity, bytes) { it.hex in friends }) {
+            is PacketBuilder.Opened.Error -> ReceiveResult.Rejected(opened.reason)
+            is PacketBuilder.Opened.Ok -> {
+                var last = eventLog.lastSeq(opened.author)
+                var accepted = 0
+                for (event in opened.events) {
+                    if (event.seq <= last) continue // ya lo teníamos
                     eventLog.append(event)
                     last = event.seq
                     accepted++
                 }
+                friendDao.markSynced(opened.author.hex, now)
+                ReceiveResult.Accepted(friends.getValue(opened.author.hex).nickname, accepted)
             }
         }
-        return ReceiveResult.Accepted(friend.nickname, accepted)
     }
 
-    data class Outgoing(val friendId: AuthorId, val upToSeq: Long, val bytes: ByteArray)
+    companion object {
+        const val MAX_PACKET_BYTES = 1024 * 1024
+    }
 }

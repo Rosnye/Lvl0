@@ -12,7 +12,7 @@
 
     <!-- Inicio -->
     <string name="home_identity">Tu identidad</string>
-    <string name="home_identity_hint">Esta huella te identifica ante tus amigos. Nadie más la conoce.</string>
+    <string name="home_identity_hint">Esta huella te identifica ante tus amigos. Comparadla en persona al vincularos.</string>
     <string name="home_total_points">Puntos totales</string>
     <string name="home_week_points">Esta semana</string>
     <string name="home_level">Nivel %1$d</string>
@@ -230,4 +230,76 @@
     <string name="routine_save_from_session">Guardar como rutina</string>
     <string name="routine_saved">Rutina guardada</string>
     <string name="routine_default_name">Rutina del %1$s</string>
+
+    <!-- Fase 3: apariencia -->
+    <string name="settings_appearance">Apariencia</string>
+    <string name="theme_dark">Oscuro</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_system">Sistema</string>
+
+    <!-- Amigos: perfil -->
+    <string name="friends_title">Amigos</string>
+    <string name="friends_pick_nickname_title">Elige tu apodo</string>
+    <string name="friends_pick_nickname_text">Es lo único que verán tus amigos junto a tu puntaje. Tus entrenamientos nunca salen del teléfono.</string>
+    <string name="friends_nickname">Apodo</string>
+    <string name="friends_edit_nickname">Cambiar apodo</string>
+    <string name="friends_fingerprint">Huella: %1$s</string>
+    <string name="friends_fingerprint_hint">Al vincularos, comparad la huella en persona para confirmar que sois vosotros.</string>
+    <string name="friends_my_code">Mi código</string>
+    <string name="friends_add">Agregar amigo</string>
+    <string name="friends_scan">Escanear su código QR</string>
+    <string name="friends_paste">Pegar invitación</string>
+    <string name="friends_share_invite">Compartir invitación</string>
+    <string name="friends_invite_message">Agrégame en GymTracker para comparar nuestros puntajes. Abre Amigos → Agregar amigo → Pegar invitación y pega este código:
+
+%1$s</string>
+    <string name="friends_my_code_text">Pide a tu amigo que escanee este código desde Amigos → Agregar amigo. Luego escanea tú el suyo.</string>
+    <string name="friends_paste_hint">Pega aquí el mensaje de invitación que te enviaron.</string>
+    <string name="friends_added">%1$s ya es tu amigo. Pídele que también te agregue para ver su puntaje.</string>
+    <string name="friends_already">%1$s ya estaba en tu lista.</string>
+    <string name="friends_invalid">No es una invitación válida de GymTracker.</string>
+    <string name="friends_self">Ese es tu propio código.</string>
+    <string name="friends_scan_failed">No se pudo abrir el escáner. Usa la invitación por mensaje.</string>
+
+    <!-- Amigos: tablero -->
+    <string name="board_title">Tablero</string>
+    <string name="board_week">Esta semana</string>
+    <string name="board_total">Total</string>
+    <string name="board_you">%1$s (tú)</string>
+    <string name="board_meta">Nivel %1$d · racha %2$d</string>
+    <string name="board_empty">Agrega amigos para competir. Solo compartís el puntaje: nada de ejercicios, pesos ni notas.</string>
+    <string name="board_points">%1$d pts</string>
+
+    <!-- Amigos: lista y sincronización -->
+    <string name="friends_list">Tus amigos</string>
+    <string name="friends_last_sync">Último puntaje recibido: %1$s</string>
+    <string name="friends_never_synced">Aún no has recibido su puntaje</string>
+    <string name="friends_send">Enviar mi puntaje</string>
+    <string name="friends_remove">Quitar</string>
+    <string name="friends_remove_confirm">¿Quitar a %1$s? Dejarás de recibir su puntaje. Podéis volver a vincularos cuando queráis.</string>
+    <string name="sync_title">Sincronizar</string>
+    <string name="sync_text">Cerca: los dos abrís esta pantalla y pulsáis Sincronizar cerca. A distancia: envía tu puntaje como archivo cifrado por cualquier mensajero; solo tu amigo puede abrirlo.</string>
+    <string name="sync_nearby">Sincronizar cerca</string>
+    <string name="sync_import">Importar archivo</string>
+    <string name="sync_nearby_title">Buscando amigos cerca</string>
+    <string name="sync_nearby_text">Mantén esta ventana abierta. Tu amigo debe pulsar Sincronizar cerca en su teléfono.</string>
+    <string name="sync_nearby_found">Cerca: %1$s</string>
+    <string name="sync_nearby_synced">Sincronizado con: %1$s</string>
+    <string name="sync_nearby_stopped">Búsqueda terminada.</string>
+    <string name="sync_nearby_failed">No se pudo iniciar la búsqueda. Revisa que el Bluetooth y la ubicación estén activados.</string>
+    <string name="sync_nearby_permissions">Para sincronizar cerca hace falta el permiso de dispositivos cercanos.</string>
+    <string name="sync_stop">Detener</string>
+    <string name="sync_done">Listo</string>
+    <string name="sync_share_title">Enviar puntaje a %1$s</string>
+
+    <!-- Paquete recibido -->
+    <string name="incoming_title">Puntaje recibido</string>
+    <string name="incoming_ok">Puntaje de %1$s actualizado.</string>
+    <string name="incoming_ok_none">El puntaje de %1$s ya estaba al día.</string>
+    <string name="incoming_error_title">No se pudo abrir el archivo</string>
+    <string name="incoming_not_for_me">Este archivo es para otra persona o está dañado.</string>
+    <string name="incoming_corrupt">El archivo no es un puntaje de GymTracker válido.</string>
+    <string name="incoming_unknown">Es de alguien que no está en tu lista de amigos. Vinculaos primero con el código QR.</string>
+    <string name="incoming_invalid">El archivo contiene datos con firma inválida y se descartó.</string>
+    <string name="incoming_view_board">Ver tablero</string>
 </resources>

@@ -1,9 +1,7 @@
 package io.gymtracker.app.ui
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -16,7 +14,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -32,6 +29,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import io.gymtracker.app.R
+import io.gymtracker.app.ui.friends.FriendsScreen
+import io.gymtracker.app.ui.friends.IncomingPacketDialog
 import io.gymtracker.app.ui.goal.NewStrengthGoalScreen
 import io.gymtracker.app.ui.history.HistoryScreen
 import io.gymtracker.app.ui.history.SessionDetailScreen
@@ -150,9 +149,16 @@ fun GymTrackerRoot() {
             composable(Routes.SESSION, arguments = listOf(navArgument("id") { type = NavType.StringType })) { entry ->
                 SessionDetailScreen(id = SessionId(entry.arguments?.getString("id").orEmpty()), onBack = { navController.popBackStack() })
             }
-            composable(Destination.FRIENDS.route) { Placeholder() }
+            composable(Destination.FRIENDS.route) { FriendsScreen() }
         }
     }
+
+    IncomingPacketDialog(onViewBoard = {
+        navController.navigate(Destination.FRIENDS.route) {
+            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+            launchSingleTop = true
+        }
+    })
 }
 
 @Composable
@@ -192,11 +198,4 @@ fun AppScaffold(
         },
         content = content,
     )
-}
-
-@Composable
-private fun Placeholder() {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(stringResource(R.string.coming_soon))
-    }
 }
