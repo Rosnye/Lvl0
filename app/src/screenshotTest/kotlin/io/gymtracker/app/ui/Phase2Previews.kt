@@ -69,11 +69,11 @@ private val training = TrainingState(sessions = sessions, goals = goals)
 private val report = ScoringEngine().compute(training, today)
 
 private val routines = listOf(
-    Routine(RoutineId("a"), "Pierna y empuje", listOf(
+    Routine(RoutineId("a"), "Legs & push", listOf(
         RoutineExercise(squat, List(3) { DraftSet(reps = 5) }),
         RoutineExercise(bench, List(3) { DraftSet(reps = 8) }),
     )),
-    Routine(RoutineId("b"), "Tirón", listOf(
+    Routine(RoutineId("b"), "Pull", listOf(
         RoutineExercise(pullUp, List(4) { DraftSet(reps = 8) }),
         RoutineExercise(ExerciseId("builtin:barbell_row"), List(3) { DraftSet(reps = 8) }),
     )),
@@ -99,17 +99,22 @@ private fun Shell(dest: Destination, content: @Composable () -> Unit) {
 }
 
 @PreviewTest
-@Preview(name = "Progreso", device = PHONE, showSystemUi = true, locale = "es")
+@Preview(name = "Progreso", device = PHONE, showSystemUi = true)
 @Composable
 fun ProgressPreview() = Shell(Destination.PROGRESS) { ProgressContent(progressState) }
 
 @PreviewTest
-@Preview(name = "Progreso completo", device = TALL, locale = "es")
+@Preview(name = "Progreso en espanol", device = PHONE, showSystemUi = true, locale = "es")
+@Composable
+fun ProgressSpanishPreview() = Shell(Destination.PROGRESS) { ProgressContent(progressState) }
+
+@PreviewTest
+@Preview(name = "Progreso completo", device = TALL)
 @Composable
 fun ProgressFullPreview() = Shell(Destination.PROGRESS) { ProgressContent(progressState) }
 
 @PreviewTest
-@Preview(name = "Inicio con rutinas", device = PHONE, showSystemUi = true, locale = "es")
+@Preview(name = "Inicio con rutinas", device = PHONE, showSystemUi = true)
 @Composable
 fun HomeRoutinesPreview() = Shell(Destination.TRAIN) {
     HomeContent(
@@ -123,20 +128,20 @@ fun HomeRoutinesPreview() = Shell(Destination.TRAIN) {
             weekSessions = report.summaryFor(today).weekSessions,
             weeklyTarget = 3,
             routines = routines,
-            recent = sessions.takeLast(2).reversed().map { s -> RecentSession(s.copy(routineName = "Pierna y empuje"), report.sessionScores.firstOrNull { it.sessionId == s.id }) },
+            recent = sessions.takeLast(2).reversed().map { s -> RecentSession(s.copy(routineName = "Legs & push"), report.sessionScores.firstOrNull { it.sessionId == s.id }) },
         ),
     )
 }
 
 @PreviewTest
-@Preview(name = "Editor de rutina", device = PHONE, showSystemUi = true, locale = "es")
+@Preview(name = "Editor de rutina", device = PHONE, showSystemUi = true)
 @Composable
 fun RoutineEditorPreview() = Shell(Destination.TRAIN) {
-    RoutineEditorContent(RoutineEditorState(routine = routines.first(), isNew = false, exercises = BuiltInExercises.byId))
+    RoutineEditorContent(RoutineEditorState(routine = routines.first(), isNew = false, exercises = BuiltInExercises.byId, keys = listOf(0L, 1L)))
 }
 
 @PreviewTest
-@Preview(name = "Nueva meta de fuerza", device = PHONE, showSystemUi = true, locale = "es")
+@Preview(name = "Nueva meta de fuerza", device = PHONE, showSystemUi = true)
 @Composable
 fun NewGoalPreview() = Shell(Destination.PROGRESS) {
     NewStrengthGoalContent(NewGoalState(exercise = BuiltInExercises.byId[pullUp], repsText = "15", currentBest = "9 reps"))

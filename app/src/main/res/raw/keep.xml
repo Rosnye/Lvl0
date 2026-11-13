@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Los nombres de ejercicios se buscan por nombre (ex_<clave>): que el reductor de recursos no los quite. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@string/ex_*" />

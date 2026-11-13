@@ -42,6 +42,11 @@ class RestTimerService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    /** La notificación usa el idioma elegido en la app. */
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(io.gymtracker.app.settings.LanguageStore.wrap(newBase))
+    }
+
     override fun onCreate() {
         super.onCreate()
         createChannels()

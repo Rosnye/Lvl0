@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.text.Normalizer
 import javax.inject.Inject
 
 data class PickerUiState(
@@ -36,13 +35,11 @@ class ExercisePickerViewModel @Inject constructor(
     /** En modo meta solo se ofrecen ejercicios con peso o repeticiones. */
     private val goalMode: Boolean = savedStateHandle.get<Boolean>(ARG_GOAL_MODE) ?: false
 
+    /** Filtra por grupo y tipo; el filtro por texto lo aplica la pantalla con el nombre traducido. */
     val state: StateFlow<PickerUiState> = combine(repository.observeState(), query, muscle) { training, q, m ->
-        val needle = q.normalized()
         val results = training.exercises.values
             .filter { !goalMode || it.loadType == LoadType.WEIGHTED || it.loadType == LoadType.BODYWEIGHT }
             .filter { m == null || it.primaryMuscle == m }
-            .filter { needle.isBlank() || it.name.normalized().contains(needle) }
-            .sortedBy { it.name }
         PickerUiState(q, m, results)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PickerUiState())
 
@@ -61,6 +58,4 @@ class ExercisePickerViewModel @Inject constructor(
         const val ARG_GOAL_MODE = "goal"
     }
 
-    private fun String.normalized(): String =
-        Normalizer.normalize(lowercase(), Normalizer.Form.NFD).replace(Regex("\\p{M}"), "")
 }

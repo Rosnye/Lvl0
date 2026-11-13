@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.gymtracker.app.R
+import io.gymtracker.app.ui.common.exerciseName
 import io.gymtracker.app.ui.common.Format
 import io.gymtracker.app.ui.common.planSummary
 import io.gymtracker.domain.model.ExerciseDefinition
@@ -103,7 +104,7 @@ fun SessionDetailContent(
                     val exercise = exercises[entry.exerciseId]
                     Card(Modifier.fillMaxWidth()) {
                         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(exercise?.name ?: entry.exerciseId.value, style = MaterialTheme.typography.titleMedium)
+                            Text(exerciseName(entry.exerciseId, exercise), style = MaterialTheme.typography.titleMedium)
                             val loadType = exercise?.loadType ?: LoadType.WEIGHTED
                             planRuns(entry.sets, loadType).forEach { (count, value) ->
                                 Text(planSummary(count, value, loadType), style = MaterialTheme.typography.bodyLarge)

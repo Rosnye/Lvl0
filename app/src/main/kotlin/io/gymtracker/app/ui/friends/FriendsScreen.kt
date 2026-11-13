@@ -56,6 +56,8 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import io.gymtracker.app.R
+import io.gymtracker.app.settings.AppLanguage
+import io.gymtracker.app.settings.LanguageStore
 import io.gymtracker.app.ui.common.Format
 import io.gymtracker.sync.Friend
 import io.gymtracker.sync.transport.FilePacketTransport
@@ -98,6 +100,8 @@ fun FriendsScreen(viewModel: FriendsViewModel = hiltViewModel()) {
         onNearby = { permissionLauncher.launch(permissions) },
         onImport = { importLauncher.launch(arrayOf("*/*")) },
         onMessageShown = viewModel::consumeMessage,
+        language = remember { LanguageStore.get(context) },
+        onLanguage = { LanguageStore.change(context, it) },
     )
 
     if (showNearby) {
@@ -126,6 +130,8 @@ fun FriendsContent(
     onImport: () -> Unit = {},
     onMessageShown: () -> Unit = {},
     initiallyShowCode: Boolean = false,
+    language: AppLanguage = AppLanguage.ENGLISH,
+    onLanguage: (AppLanguage) -> Unit = {},
 ) {
     var editingNickname by remember { mutableStateOf(false) }
     var showCode by remember { mutableStateOf(initiallyShowCode) }
@@ -139,6 +145,7 @@ fun FriendsContent(
 
         if (state.nickname == null) {
             NicknameCard(initial = "", onSave = onNickname, title = stringResource(R.string.friends_pick_nickname_title))
+            LanguageCard(language, onLanguage)
             return@Column
         }
 
@@ -149,6 +156,7 @@ fun FriendsContent(
             onScan = onScan,
             onPaste = { showPaste = true },
         )
+        LanguageCard(language, onLanguage)
 
         LeaderboardCard(state, onBoard)
 
@@ -236,6 +244,20 @@ fun MyCodeContent(invite: String, nickname: String, fingerprint: String, modifie
         Text(nickname, style = MaterialTheme.typography.titleMedium)
         Text(stringResource(R.string.friends_fingerprint, fingerprint), style = MaterialTheme.typography.bodySmall)
         Text(stringResource(R.string.friends_my_code_text), style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
+    }
+}
+
+@Composable
+private fun LanguageCard(language: AppLanguage, onLanguage: (AppLanguage) -> Unit) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(stringResource(R.string.settings_language), style = MaterialTheme.typography.titleSmall)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterChip(selected = language == AppLanguage.ENGLISH, onClick = { onLanguage(AppLanguage.ENGLISH) }, label = { Text(stringResource(R.string.language_english)) })
+                FilterChip(selected = language == AppLanguage.SPANISH, onClick = { onLanguage(AppLanguage.SPANISH) }, label = { Text(stringResource(R.string.language_spanish)) })
+            }
+            Text(stringResource(R.string.language_hint), style = MaterialTheme.typography.bodySmall)
+        }
     }
 }
 

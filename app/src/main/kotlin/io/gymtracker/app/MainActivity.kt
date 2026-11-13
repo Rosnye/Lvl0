@@ -1,5 +1,6 @@
 package io.gymtracker.app
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
@@ -16,6 +17,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import io.gymtracker.app.friends.IncomingPackets
+import io.gymtracker.app.settings.LanguageStore
 import io.gymtracker.app.settings.ThemeMode
 import io.gymtracker.app.settings.ThemeSettings
 import io.gymtracker.app.ui.GymTrackerRoot
@@ -28,6 +30,10 @@ class MainActivity : ComponentActivity() {
 
     @Inject lateinit var themeSettings: ThemeSettings
     @Inject lateinit var incomingPackets: IncomingPackets
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LanguageStore.wrap(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

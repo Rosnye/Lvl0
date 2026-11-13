@@ -229,6 +229,9 @@ Estimaciones para una persona a tiempo parcial; ajustar según disponibilidad.
 | 2026-11-10 | **AGP 9.5 / compileSdk 37**: las versiones actuales de Hilt y AndroidX lo exigen. |
 | 2026-11-12 | **Metas sin efecto retroactivo**: cambiar la meta semanal crea una nueva; las metas de fuerza cumplidas no se pueden eliminar. |
 | 2026-11-12 | **Insignias y rutinas privadas**: no se comparten con amigos (coherente con "solo el puntaje"). |
+| 2026-11-14 | **Inglés por defecto**, con opción de español en el perfil (Amigos). El catálogo de ejercicios también se traduce. |
+| 2026-11-14 | **Progreso es la pantalla principal** y la primera pestaña. |
+| 2026-11-14 | **Ordenar ejercicios de una rutina arrastrando** desde un asa (librería Reorderable). |
 | 2026-11-13 | **Ejercicios sin peso, como series × repeticiones**: se rellena una vez por ejercicio y se marcan las series hechas. Fórmula de puntaje v2 basada en repeticiones; metas nuevas de repeticiones. |
 | 2026-11-13 | **Apariencia oscura por defecto**, con opción de claro o seguir al sistema. |
 | 2026-11-13 | **Paquetes como instantánea** (último perfil + último resumen por semana) en lugar de envío incremental: idempotente y sin estado por amigo. |
@@ -241,7 +244,7 @@ Pendiente: nombre definitivo de la app y licencia (recomendación: código abier
 **Fase 0 completada (2026-11-10):** estructura de módulos, esquema de eventos v1, motor de puntaje v1 con 17 pruebas, identidad criptográfica con 6 pruebas, Room + SQLCipher con clave sellada en Keystore, app Compose que arranca y muestra huella y puntaje. `./gradlew :app:assembleDebug` genera el APK.
 
 **Fase 1 completada (2026-11-11):**
-- Catálogo precargado de 55 ejercicios en `domain` (ids estables `builtin:*`, no se registran como eventos) y ejercicios personalizados por `exercise_defined`.
+- Catálogo precargado de 54 ejercicios en `domain` (ids estables `builtin:*`, no se registran como eventos) y ejercicios personalizados por `exercise_defined`.
 - Borrador de entrenamiento persistido en DataStore (`WorkoutDraft`), convertido a `session_logged` al terminar; publica `score_published` en el mismo paso.
 - Temporizador de descanso: servicio en primer plano (`specialUse`) con notificación que usa el cronómetro del sistema, acciones +30 s / Omitir y aviso con sonido y vibración al terminar. Estado persistido para sobrevivir a la muerte del proceso.
 - Historial agrupado por semana, detalle de sesión con desglose del puntaje y borrado por lápida.

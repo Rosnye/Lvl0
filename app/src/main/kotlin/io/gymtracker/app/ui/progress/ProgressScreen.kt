@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.gymtracker.app.R
+import io.gymtracker.app.ui.common.exerciseName
 import io.gymtracker.app.ui.common.Format
 import io.gymtracker.app.ui.common.descriptionRes
 import io.gymtracker.app.ui.common.emoji
@@ -227,7 +228,7 @@ private fun FrequencyCard(progress: FrequencyProgress, onChange: (Int) -> Unit) 
 @Composable
 private fun StrengthGoalCard(progress: StrengthProgress, exercises: Map<ExerciseId, ExerciseDefinition>, onDelete: (GoalId) -> Unit) {
     var confirm by remember { mutableStateOf(false) }
-    val name = exercises[progress.exerciseId]?.name ?: progress.exerciseId.value
+    val name = exerciseName(progress.exerciseId, exercises[progress.exerciseId])
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {

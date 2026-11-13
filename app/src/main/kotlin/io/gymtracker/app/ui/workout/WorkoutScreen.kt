@@ -52,6 +52,7 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.gymtracker.app.R
+import io.gymtracker.app.ui.common.exerciseName
 import io.gymtracker.app.ui.common.Format
 import io.gymtracker.app.ui.common.SetPlanEditor
 import io.gymtracker.domain.model.DraftEntry
@@ -219,7 +220,7 @@ private fun ExerciseCard(
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(exercise?.name ?: entry.exerciseId.value, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                Text(exerciseName(entry.exerciseId, exercise), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                 IconButton(onClick = onRemove) { Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.workout_remove_exercise)) }
             }
             SetPlanEditor(entry.sets, loadType, onSetPlan)

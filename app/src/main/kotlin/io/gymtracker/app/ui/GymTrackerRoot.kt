@@ -4,7 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
@@ -46,8 +46,8 @@ import io.gymtracker.domain.model.ExerciseId
 import io.gymtracker.domain.model.SessionId
 
 enum class Destination(val route: String, @param:StringRes val label: Int, val icon: ImageVector) {
-    TRAIN("train", R.string.tab_train, Icons.Filled.Home),
     PROGRESS("progress", R.string.tab_progress, Icons.Filled.Star),
+    TRAIN("train", R.string.tab_train, Icons.Filled.PlayArrow),
     FRIENDS("friends", R.string.tab_friends, Icons.Filled.Person),
 }
 
@@ -65,7 +65,7 @@ object Routes {
 
     /** Pestaña que se marca en la barra inferior para cada pantalla. */
     fun tabOf(route: String?): Destination = when {
-        route == null -> Destination.TRAIN
+        route == null -> Destination.PROGRESS
         route.startsWith(Destination.PROGRESS.route) || route == HISTORY || route.startsWith("session") || route == NEW_GOAL -> Destination.PROGRESS
         route.startsWith(Destination.FRIENDS.route) -> Destination.FRIENDS
         else -> Destination.TRAIN
@@ -91,7 +91,7 @@ fun GymTrackerRoot() {
             }
         },
     ) { padding ->
-        NavHost(navController, startDestination = Destination.TRAIN.route, modifier = Modifier.padding(padding)) {
+        NavHost(navController, startDestination = Destination.PROGRESS.route, modifier = Modifier.padding(padding)) {
             composable(Destination.TRAIN.route) {
                 HomeScreen(
                     onOpenWorkout = { navController.navigate(Routes.WORKOUT) },

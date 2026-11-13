@@ -53,9 +53,9 @@ Las capturas de referencia quedan en `app/src/screenshotTestDebug/reference/` y
 
 ## Cómo luce hoy
 
-| Inicio con rutinas | Entrenamiento con descanso | Progreso |
+| Progreso (principal) | Entrenamiento con descanso | Inicio con rutinas |
 |---|---|---|
-| ![Inicio](docs/capturas/inicio-rutinas.png) | ![Entrenamiento](docs/capturas/entrenamiento-descanso.png) | ![Progreso](docs/capturas/progreso.png) |
+| ![Progreso](docs/capturas/progreso.png) | ![Entrenamiento](docs/capturas/entrenamiento-descanso.png) | ![Inicio](docs/capturas/inicio-rutinas.png) |
 
 | Amigos y tablero | Mi código | Editor de rutina |
 |---|---|---|
@@ -74,7 +74,7 @@ El estado se persiste, así que sobrevive a la muerte del proceso.
 ## Estado
 
 - Fase 0 completada: módulos, esquema de eventos v1, fórmula de puntaje, identidad criptográfica, base de datos cifrada.
-- Fase 1 completada: catálogo de 55 ejercicios + personalizados, registro de sesión con borrador persistente,
+- Fase 1 completada: catálogo de 54 ejercicios + personalizados, registro de sesión con borrador persistente,
   temporizador de descanso en primer plano con notificación, historial semanal y detalle con desglose de puntos.
 - Fase 2 completada: Progreso con nivel, calendario de asistencia, metas (semanal, fuerza y repeticiones),
   15 insignias, rutinas y CI con GitHub Actions.
@@ -82,6 +82,8 @@ El estado se persiste, así que sobrevive a la muerte del proceso.
   (Nearby) y apariencia oscura por defecto.
 - Registro simplificado: cada ejercicio es series × repeticiones (sin peso); se marcan las series hechas
   con un toque y arranca el descanso. Puntaje v2 basado en repeticiones.
+- App en inglés por defecto con opción de español en Amigos; Progreso como pantalla principal;
+  ejercicios de una rutina ordenables arrastrando su asa.
 - Siguiente: Fase 4 (respaldo cifrado, onboarding y lanzamiento).
 
 ## CI y APK descargable

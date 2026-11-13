@@ -21,6 +21,8 @@ data class RoutineEditorState(
     val routine: Routine? = null,
     val isNew: Boolean = true,
     val exercises: Map<ExerciseId, ExerciseDefinition> = emptyMap(),
+    /** Clave estable de cada ejercicio de la rutina (en su orden), para arrastrar y animar. */
+    val keys: List<Long> = emptyList(),
 ) {
     val canSave: Boolean get() = routine != null && routine.name.isNotBlank() && routine.exercises.isNotEmpty()
 }
@@ -33,16 +35,19 @@ class RoutineEditorViewModel @Inject constructor(
 ) : ViewModel() {
     private val _state = MutableStateFlow(RoutineEditorState())
     val state: StateFlow<RoutineEditorState> = _state
+    private var nextKey = 0L
 
     init {
         val idArg = savedStateHandle.get<String>(ARG_ID)
         viewModelScope.launch {
             val training = repository.currentState()
             val existing = training.routines.firstOrNull { it.id.value == idArg }
+            val routine = existing ?: Routine(repository.newRoutineId(), "", emptyList())
             _state.value = RoutineEditorState(
-                routine = existing ?: Routine(repository.newRoutineId(), "", emptyList()),
+                routine = routine,
                 isNew = existing == null,
                 exercises = training.exercises,
+                keys = routine.exercises.map { nextKey++ },
             )
         }
     }
@@ -52,14 +57,33 @@ class RoutineEditorViewModel @Inject constructor(
     fun addExercise(id: ExerciseId) {
         viewModelScope.launch {
             val plan = repository.planFor(id)
-            edit { it.copy(exercises = it.exercises + RoutineExercise(id, plan)) }
+            _state.update { s ->
+                val r = s.routine ?: return@update s
+                s.copy(routine = r.copy(exercises = r.exercises + RoutineExercise(id, plan)), keys = s.keys + nextKey++)
+            }
         }
     }
 
     fun setPlan(exerciseIndex: Int, sets: List<DraftSet>) = editExercise(exerciseIndex) { e -> e.copy(sets = sets.map { it.copy(done = false) }) }
 
-    fun removeExercise(exerciseIndex: Int) = edit { r ->
-        r.copy(exercises = r.exercises.toMutableList().also { if (exerciseIndex in it.indices) it.removeAt(exerciseIndex) })
+    fun removeExercise(exerciseIndex: Int) = _state.update { s ->
+        val r = s.routine ?: return@update s
+        if (exerciseIndex !in r.exercises.indices) return@update s
+        s.copy(
+            routine = r.copy(exercises = r.exercises.toMutableList().also { it.removeAt(exerciseIndex) }),
+            keys = s.keys.toMutableList().also { it.removeAt(exerciseIndex) },
+        )
+    }
+
+    /** Mueve un ejercicio a la posición de otro (arrastrar para ordenar), identificados por su clave. */
+    fun move(fromKey: Long, toKey: Long) = _state.update { s ->
+        val r = s.routine ?: return@update s
+        val from = s.keys.indexOf(fromKey)
+        val to = s.keys.indexOf(toKey)
+        if (from < 0 || to < 0 || from == to) return@update s
+        val exercises = r.exercises.toMutableList().apply { add(to, removeAt(from)) }
+        val keys = s.keys.toMutableList().apply { add(to, removeAt(from)) }
+        s.copy(routine = r.copy(exercises = exercises), keys = keys)
     }
 
     fun save(onDone: () -> Unit) {

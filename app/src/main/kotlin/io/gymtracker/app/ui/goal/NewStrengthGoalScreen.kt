@@ -27,6 +27,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.gymtracker.app.R
+import io.gymtracker.app.ui.common.exerciseName
 import io.gymtracker.app.ui.common.NumberField
 import io.gymtracker.domain.model.ExerciseDefinition
 import io.gymtracker.domain.model.ExerciseId
@@ -110,7 +111,7 @@ fun NewStrengthGoalContent(
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text(stringResource(R.string.goal_exercise), style = MaterialTheme.typography.labelLarge)
             OutlinedButton(onClick = onChooseExercise, modifier = Modifier.fillMaxWidth()) {
-                Text(state.exercise?.name ?: stringResource(R.string.goal_choose_exercise))
+                Text(state.exercise?.let { exerciseName(it.id, it) } ?: stringResource(R.string.goal_choose_exercise))
             }
             state.currentBest?.let { Text(stringResource(R.string.goal_current_best, it), style = MaterialTheme.typography.bodySmall) }
             NumberField(state.repsText, stringResource(R.string.goal_min_reps), Modifier.fillMaxWidth(), onChange = onReps)

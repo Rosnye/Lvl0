@@ -75,32 +75,32 @@ private fun Shell(dest: Destination, darkTheme: Boolean = true, content: @Compos
 }
 
 @PreviewTest
-@Preview(name = "Entrenamiento con descanso", device = PHONE, showSystemUi = true, locale = "es")
+@Preview(name = "Entrenamiento con descanso", device = PHONE, showSystemUi = true)
 @Composable
 fun WorkoutTimerPreview() = Shell(Destination.TRAIN) {
     WorkoutContent(WorkoutUiState(draft = draft, exercises = BuiltInExercises.byId, elapsedSeconds = 1_505, timer = TimerUi(remainingSeconds = 64, totalSeconds = 90)))
 }
 
 @PreviewTest
-@Preview(name = "Entrenamiento claro", device = PHONE, showSystemUi = true, locale = "es")
+@Preview(name = "Entrenamiento claro", device = PHONE, showSystemUi = true)
 @Composable
 fun WorkoutLightPreview() = Shell(Destination.TRAIN, darkTheme = false) {
     WorkoutContent(WorkoutUiState(draft = draft, exercises = BuiltInExercises.byId, elapsedSeconds = 1_505))
 }
 
 @PreviewTest
-@Preview(name = "Selector de ejercicios", device = PHONE, showSystemUi = true, locale = "es")
+@Preview(name = "Selector de ejercicios", device = PHONE, showSystemUi = true)
 @Composable
 fun PickerPreview() = Shell(Destination.TRAIN) {
     PickerContent(PickerUiState(muscle = MuscleGroup.BACK, results = BuiltInExercises.all.filter { it.primaryMuscle == MuscleGroup.BACK }))
 }
 
 @PreviewTest
-@Preview(name = "Historial", device = PHONE, showSystemUi = true, locale = "es")
+@Preview(name = "Historial", device = PHONE, showSystemUi = true)
 @Composable
 fun HistoryPreview() = Shell(Destination.PROGRESS) { HistoryContent(historyState) }
 
 @PreviewTest
-@Preview(name = "Detalle de sesion", device = PHONE, showSystemUi = true, locale = "es")
+@Preview(name = "Detalle de sesion", device = PHONE, showSystemUi = true)
 @Composable
 fun SessionDetailPreview() = Shell(Destination.PROGRESS) { SessionDetailContent(items.first(), training.exercises) }

@@ -64,22 +64,27 @@ private fun Shell(content: @Composable () -> Unit) {
 }
 
 @PreviewTest
-@Preview(name = "Amigos", device = PHONE, showSystemUi = true, locale = "es")
+@Preview(name = "Amigos", device = PHONE, showSystemUi = true)
 @Composable
 fun FriendsPreview() = Shell { FriendsContent(friendsState) }
 
 @PreviewTest
-@Preview(name = "Amigos completo", device = TALL, locale = "es")
+@Preview(name = "Amigos completo", device = TALL)
 @Composable
 fun FriendsFullPreview() = Shell { FriendsContent(friendsState) }
 
 @PreviewTest
-@Preview(name = "Elegir apodo", device = PHONE, showSystemUi = true, locale = "es")
+@Preview(name = "Amigos en espanol", device = PHONE, showSystemUi = true, locale = "es")
+@Composable
+fun FriendsSpanishPreview() = Shell { FriendsContent(friendsState, language = io.gymtracker.app.settings.AppLanguage.SPANISH) }
+
+@PreviewTest
+@Preview(name = "Elegir apodo", device = PHONE, showSystemUi = true)
 @Composable
 fun NicknamePreview() = Shell { FriendsContent(FriendsUiState(fingerprint = me.authorId.fingerprint)) }
 
 @PreviewTest
-@Preview(name = "Mi codigo", device = PHONE, showSystemUi = true, locale = "es")
+@Preview(name = "Mi codigo", device = PHONE, showSystemUi = true)
 @Composable
 fun MyCodePreview() = Shell {
     Card(Modifier.padding(24.dp)) {

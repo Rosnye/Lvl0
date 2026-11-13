@@ -81,6 +81,9 @@ dependencies {
     implementation(libs.zxing.core)
     implementation(libs.play.services.code.scanner)
 
+    // Arrastrar para ordenar los ejercicios de una rutina.
+    implementation(libs.reorderable)
+
     testImplementation(libs.kotlin.test.junit5)
     screenshotTestImplementation(libs.compose.ui.tooling)
     screenshotTestImplementation(libs.screenshot.validation.api)

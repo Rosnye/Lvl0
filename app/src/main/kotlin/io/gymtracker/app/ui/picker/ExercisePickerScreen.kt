@@ -35,11 +35,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.gymtracker.app.R
+import io.gymtracker.app.ui.common.exerciseName
 import io.gymtracker.app.ui.common.labelRes
 import io.gymtracker.domain.model.BuiltInExercises
 import io.gymtracker.domain.model.Equipment
@@ -94,8 +97,20 @@ fun PickerContent(
         if (state.results.isEmpty()) {
             Text(stringResource(R.string.picker_no_results), modifier = Modifier.padding(16.dp))
         }
+        val context = LocalContext.current
+        val locales = LocalConfiguration.current.locales
+        val visible = remember(state.results, state.query, locales) {
+            val needle = state.query.normalizedForSearch()
+            state.results
+                .map { it to exerciseName(context, it.id, it) }
+                .filter { (_, name) -> needle.isBlank() || name.normalizedForSearch().contains(needle) }
+                .sortedBy { (_, name) -> name.lowercase() }
+        }
+        if (visible.isEmpty() && state.results.isNotEmpty()) {
+            Text(stringResource(R.string.picker_no_results), modifier = Modifier.padding(16.dp))
+        }
         LazyColumn(Modifier.weight(1f)) {
-            items(state.results, key = { it.id.value }) { exercise ->
+            items(visible, key = { it.first.id.value }) { (exercise, _) ->
                 ExerciseRow(exercise, onClick = { onPick(exercise.id) })
                 HorizontalDivider()
             }
@@ -113,7 +128,7 @@ fun PickerContent(
 @Composable
 private fun ExerciseRow(exercise: ExerciseDefinition, onClick: () -> Unit) {
     ListItem(
-        headlineContent = { Text(exercise.name) },
+        headlineContent = { Text(exerciseName(exercise.id, exercise)) },
         supportingContent = {
             val custom = if (BuiltInExercises.isBuiltIn(exercise.id)) "" else " · ${stringResource(R.string.picker_custom)}"
             Text(stringResource(exercise.primaryMuscle.labelRes()) + " · " + stringResource(exercise.equipment.labelRes()) + custom)
@@ -121,6 +136,10 @@ private fun ExerciseRow(exercise: ExerciseDefinition, onClick: () -> Unit) {
         modifier = Modifier.clickable(onClick = onClick),
     )
 }
+
+/** Minúsculas y sin tildes, para que "press banca" encuentre "Press de banca". */
+private fun String.normalizedForSearch(): String =
+    java.text.Normalizer.normalize(lowercase(), java.text.Normalizer.Form.NFD).replace(Regex("\\p{M}"), "")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

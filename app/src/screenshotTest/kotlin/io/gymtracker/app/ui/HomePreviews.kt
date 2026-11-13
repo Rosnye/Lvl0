@@ -37,16 +37,16 @@ private fun HomeShell(darkTheme: Boolean, state: HomeUiState) {
 }
 
 @PreviewTest
-@Preview(name = "Inicio claro", device = PHONE, showSystemUi = true, locale = "es")
+@Preview(name = "Inicio claro", device = PHONE, showSystemUi = true)
 @Composable
 fun HomeLightPreview() = HomeShell(darkTheme = false, state = sample.copy(themeMode = io.gymtracker.app.settings.ThemeMode.LIGHT))
 
 @PreviewTest
-@Preview(name = "Inicio oscuro", device = PHONE, showSystemUi = true, locale = "es", uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "Inicio oscuro", device = PHONE, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun HomeDarkPreview() = HomeShell(darkTheme = true, state = sample)
 
 @PreviewTest
-@Preview(name = "Inicio sin datos", device = PHONE, showSystemUi = true, locale = "es")
+@Preview(name = "Inicio sin datos", device = PHONE, showSystemUi = true)
 @Composable
 fun HomeEmptyPreview() = HomeShell(darkTheme = true, state = HomeUiState(fingerprint = "9f3a-1c77-b2e0-4d58"))

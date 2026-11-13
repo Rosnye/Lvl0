@@ -1,7 +1,19 @@
 package io.gymtracker.app.ui.routine
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.CardDefaults
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -40,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.gymtracker.app.R
+import io.gymtracker.app.ui.common.exerciseName
 import io.gymtracker.app.ui.common.SetPlanEditor
 import io.gymtracker.domain.model.DraftSet
 import io.gymtracker.domain.model.ExerciseId
@@ -66,6 +79,7 @@ fun RoutineEditorScreen(
         onRename = viewModel::rename,
         onAddExercise = onAddExercise,
         onSetPlan = viewModel::setPlan,
+        onMove = viewModel::move,
         onRemoveExercise = viewModel::removeExercise,
         onSave = { viewModel.save(onClose) },
         onDelete = { viewModel.delete(onClose) },
@@ -79,12 +93,14 @@ fun RoutineEditorContent(
     onRename: (String) -> Unit = {},
     onAddExercise: () -> Unit = {},
     onSetPlan: (Int, List<DraftSet>) -> Unit = { _, _ -> },
+    onMove: (Long, Long) -> Unit = { _, _ -> },
     onRemoveExercise: (Int) -> Unit = {},
     onSave: () -> Unit = {},
     onDelete: () -> Unit = {},
 ) {
     var confirmDelete by remember { mutableStateOf(false) }
     val routine = state.routine
+    val dragLabel = stringResource(R.string.routine_drag)
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back)) }
@@ -99,8 +115,21 @@ fun RoutineEditorContent(
             Button(onClick = onSave, enabled = state.canSave, modifier = Modifier.padding(end = 8.dp)) { Text(stringResource(R.string.save)) }
         }
         if (routine == null) return@Column
-        LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            item {
+        val listState = rememberLazyListState()
+        val haptics = LocalHapticFeedback.current
+        val reorderState = rememberReorderableLazyListState(listState) { from, to ->
+            val fromKey = from.key as? Long ?: return@rememberReorderableLazyListState
+            val toKey = to.key as? Long ?: return@rememberReorderableLazyListState
+            onMove(fromKey, toKey)
+            haptics.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+        }
+        LazyColumn(
+            Modifier.weight(1f),
+            state = listState,
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            item(key = "name") {
                 OutlinedTextField(
                     value = routine.name,
                     onValueChange = onRename,
@@ -110,15 +139,31 @@ fun RoutineEditorContent(
                 )
             }
             if (routine.exercises.isEmpty()) {
-                item { Text(stringResource(R.string.routine_empty), style = MaterialTheme.typography.bodyMedium) }
+                item(key = "empty") { Text(stringResource(R.string.routine_empty), style = MaterialTheme.typography.bodyMedium) }
+            } else if (routine.exercises.size > 1) {
+                item(key = "hint") { Text(stringResource(R.string.routine_drag_hint), style = MaterialTheme.typography.bodySmall) }
             }
-            itemsIndexed(routine.exercises, key = { i, e -> "${e.exerciseId.value}-$i" }) { exerciseIndex, exercise ->
+            itemsIndexed(routine.exercises, key = { i, _ -> state.keys.getOrElse(i) { -1L - i } }) { exerciseIndex, exercise ->
                 val definition = state.exercises[exercise.exerciseId]
                 val loadType = definition?.loadType ?: LoadType.WEIGHTED
-                Card(Modifier.fillMaxWidth()) {
+                ReorderableItem(reorderState, key = state.keys.getOrElse(exerciseIndex) { -1L - exerciseIndex }) { dragging ->
+                val elevation by animateDpAsState(if (dragging) 8.dp else 0.dp, label = "drag")
+                Card(Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(defaultElevation = elevation)) {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(definition?.name ?: exercise.exerciseId.value, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                            Box(
+                                Modifier
+                                    .draggableHandle(
+                                        onDragStarted = { haptics.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate) },
+                                        onDragStopped = { haptics.performHapticFeedback(HapticFeedbackType.GestureEnd) },
+                                    )
+                                    .size(48.dp)
+                                    .semantics { contentDescription = dragLabel },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(painterResource(R.drawable.ic_drag_handle), contentDescription = null)
+                            }
+                            Text(exerciseName(exercise.exerciseId, definition), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                             IconButton(onClick = { onRemoveExercise(exerciseIndex) }) {
                                 Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.workout_remove_exercise))
                             }
@@ -126,8 +171,9 @@ fun RoutineEditorContent(
                         SetPlanEditor(exercise.sets, loadType) { sets -> onSetPlan(exerciseIndex, sets) }
                     }
                 }
+                }
             }
-            item {
+            item(key = "add") {
                 OutlinedButton(onClick = onAddExercise, modifier = Modifier.fillMaxWidth()) {
                     Icon(Icons.Filled.Add, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
